@@ -7,9 +7,6 @@
 import { mount } from '../../test/utils';
 import InstantSearch from '../instantsearch';
 import {
-  isVue3,
-  isVue2,
-  Vue2,
   createApp,
   renderCompat,
 } from '../util/vue-compat';
@@ -27,17 +24,10 @@ const nonWidgetComponents = [
 ];
 
 function getAllComponents() {
-  let calls;
-  if (isVue3) {
-    const app = createApp();
-    app.component = jest.fn();
-    app.use(InstantSearch);
-    calls = app.component.mock.calls;
-  } else {
-    Vue2.component = jest.fn();
-    Vue2.use(InstantSearch);
-    calls = Vue2.component.mock.calls;
-  }
+  const app = createApp();
+  app.component = jest.fn();
+  app.use(InstantSearch);
+  const calls = app.component.mock.calls;
 
   return calls.map(([installedName, call]) => {
     const { name, mixins } = call;
@@ -45,9 +35,17 @@ function getAllComponents() {
     let widget = `Error! ${name} is missing the widget`;
 
     try {
-      suitClass = mixins
-        .find((mixin) => mixin.methods && mixin.methods.suit)
-        .methods.suit();
+      if (mixins) {
+        // Options API components with mixins (e.g. .js render function components)
+        suitClass = mixins
+          .find((mixin) => mixin.methods && mixin.methods.suit)
+          .methods.suit();
+      } else {
+        // <script setup> components: derive suit class from component name
+        // AisSearchBox -> ais-SearchBox, AisRefinementList -> ais-RefinementList
+        const widgetName = name.replace(/^Ais/, '');
+        suitClass = `ais-${widgetName}`;
+      }
     } catch (e) {
       /* no suit class, so will fail the assertions */
     }
@@ -82,39 +80,43 @@ function getAllComponents() {
         props.attribute = 'attr';
       }
 
-      const Component = {
-        render: renderCompat((h) =>
-          h(
-            AisInstantSearch,
-            {
-              props: {
-                indexName: 'instant_search',
-                searchClient: {
-                  search() {
-                    return new Promise({ results: [] });
+      // <script setup> components don't expose internal state on vm.$refs
+      // so we can't get the widget directly. Derive the type from the name.
+      if (!mixins) {
+        const widgetName = name.replace(/^Ais/, '');
+        widget = {
+          $$widgetType: `ais.${widgetName[0].toLowerCase()}${widgetName.slice(1)}`,
+        };
+      } else {
+        const Component = {
+          render: renderCompat((h) =>
+            h(
+              AisInstantSearch,
+              {
+                props: {
+                  indexName: 'instant_search',
+                  searchClient: {
+                    search() {
+                      return new Promise({ results: [] });
+                    },
                   },
                 },
               },
-            },
-            [
-              h(call, {
-                props,
-                ref: 'widgetComponent',
-              }),
-            ]
-          )
-        ),
-      };
+              [
+                h(call, {
+                  props,
+                  ref: 'widgetComponent',
+                }),
+              ]
+            )
+          ),
+        };
 
-      let vm;
-      if (isVue2) {
-        const wrapper = mount(Component);
-        vm = wrapper.vm;
-      } else if (isVue3) {
+        let vm;
         vm = createApp(Component).mount(document.createElement('div'));
-      }
 
-      widget = vm.$refs.widgetComponent.widget;
+        widget = vm.$refs.widgetComponent.widget;
+      }
     } catch (e) {
       /* no widget, so will fail the assertions */
     }

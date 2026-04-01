@@ -3,12 +3,12 @@
  */
 
 import { mount } from '../../../test/utils';
-import { __setState } from '../../mixins/widget';
+import { __setState } from '../../composables/useWidget';
 import HierarchicalMenu from '../HierarchicalMenu.vue';
 import '../../../test/utils/sortedHtmlSerializer';
 
-jest.mock('../../mixins/widget');
-jest.mock('../../mixins/panel');
+jest.mock('../../composables/useWidget');
+jest.mock('../../composables/usePanel');
 
 const apple = {
   label: 'Apple',
@@ -295,9 +295,7 @@ describe('custom default render', () => {
     __setState({
       ...defaultState,
       toggleShowMore: () => {
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        const component = wrapper.findComponent(HierarchicalMenu);
-        component.setData({ state: { isShowingMore: true } });
+        __setState({ ...defaultState, isShowingMore: true, toggleShowMore: () => {} });
       },
     });
 
@@ -379,9 +377,7 @@ describe('custom default render', () => {
     __setState({
       ...defaultState,
       toggleShowMore: () => {
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        const component = wrapper.findComponent(HierarchicalMenu);
-        component.setData({ state: { isShowingMore: true } });
+        __setState({ ...defaultState, isShowingMore: true, toggleShowMore: () => {} });
       },
     });
 
@@ -451,9 +447,7 @@ describe('custom showMoreLabel render', () => {
     __setState({
       ...defaultState,
       toggleShowMore: () => {
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        const component = wrapper.findComponent(HierarchicalMenu);
-        component.setData({ state: { isShowingMore: true } });
+        __setState({ ...defaultState, isShowingMore: true, toggleShowMore: () => {} });
       },
     });
 

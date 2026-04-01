@@ -3,11 +3,11 @@
  */
 
 import { mount } from '../../../test/utils';
-import { __setState } from '../../mixins/widget';
+import { __setState } from '../../composables/useWidget';
 import QueryRuleCustomData from '../QueryRuleCustomData.vue';
 import '../../../test/utils/sortedHtmlSerializer';
 
-jest.mock('../../mixins/widget');
+jest.mock('../../composables/useWidget');
 
 it('renders in a list of <pre> by default', () => {
   __setState({
@@ -55,31 +55,41 @@ it('gives the items to the main slot', () => {
 
 it('gives individual items to the item slot', () => {
   const items = [{ text: 'this is user data' }, { text: 'this too!' }];
-  expect.assertions(items.length);
   __setState({
     items,
   });
 
+  const itemSlot = jest.fn();
   mount(QueryRuleCustomData, {
     scopedSlots: {
-      item(props) {
-        expect(props).toEqual({
-          item: expect.objectContaining({ text: expect.any(String) }),
-        });
-      },
+      item: itemSlot,
     },
   });
+
+  expect(itemSlot).toHaveBeenCalledWith(
+    expect.objectContaining({
+      item: expect.objectContaining({ text: 'this is user data' }),
+    })
+  );
+  expect(itemSlot).toHaveBeenCalledWith(
+    expect.objectContaining({
+      item: expect.objectContaining({ text: 'this too!' }),
+    })
+  );
 });
 
 it('accepts transformItems', () => {
+  const { useWidget } = require('../../composables/useWidget');
   const transformItems = jest.fn();
-  const wrapper = mount(QueryRuleCustomData, {
+  mount(QueryRuleCustomData, {
     propsData: {
       transformItems,
     },
   });
 
-  expect(wrapper.vm.widgetParams).toEqual({
+  // useWidget is called with the widgetParams computed
+  const widgetParamsComputed = useWidget.mock.calls[useWidget.mock.calls.length - 1][1];
+  expect(widgetParamsComputed.value).toEqual({
     transformItems,
   });
 });

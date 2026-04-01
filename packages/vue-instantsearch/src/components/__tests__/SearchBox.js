@@ -3,9 +3,9 @@
  */
 
 import { mount, htmlCompat } from '../../../test/utils';
-import { __setState } from '../../mixins/widget';
+import { __setState } from '../../composables/useWidget';
 import SearchBox from '../SearchBox.vue';
-jest.mock('../../mixins/widget');
+jest.mock('../../composables/useWidget');
 import '../../../test/utils/sortedHtmlSerializer';
 
 const defaultState = {};
@@ -90,7 +90,8 @@ test('keep local query when out of sync and input is focused', async () => {
   input.element.focus();
   await input.setValue('hello');
 
-  await wrapper.setData({ state: { query: 'hel' } });
+  __setState({ ...state, query: 'hel' });
+  await wrapper.vm.$nextTick();
 
   expect(input.element.value).toBe('hello');
   expect(state.refine).toHaveBeenLastCalledWith('hello');

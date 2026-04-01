@@ -4,7 +4,6 @@
 
 import { mount } from '../../../test/utils';
 import { __setWidget } from '../../mixins/widget';
-import { Vue2, isVue3, isVue2 } from '../../util/vue-compat';
 import Index from '../Index';
 jest.mock('../../mixins/widget');
 import '../../../test/utils/sortedHtmlSerializer';
@@ -78,10 +77,6 @@ it('provides the index widget', (done) => {
     },
   };
 
-  if (isVue2) {
-    Vue2.config.errorHandler = done;
-  }
-
   mount(
     {
       components: { Index, ChildComponent },
@@ -91,7 +86,7 @@ it('provides the index widget', (done) => {
       </Index>
     `,
     },
-    isVue3 && {
+    {
       global: {
         config: {
           errorHandler: done,

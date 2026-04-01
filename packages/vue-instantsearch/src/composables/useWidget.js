@@ -7,15 +7,18 @@ export function useWidget(
   widgetParams,
   additionalProperties = {}
 ) {
-  const instantSearchInstance = inject('$_ais_instantSearchInstance', () => {
+  const instantSearchInstance = inject('$_ais_instantSearchInstance');
+
+  if (!instantSearchInstance) {
     throw new TypeError(
       'It looks like you forgot to wrap your Algolia search component inside of an "<ais-instant-search>" component.'
     );
-  });
+  }
 
-  const getParentIndex = inject('$_ais_getParentIndex', () => {
-    return () => instantSearchInstance.mainIndex;
-  });
+  const getParentIndex = inject(
+    '$_ais_getParentIndex',
+    () => instantSearchInstance.mainIndex
+  );
 
   const state = ref(null);
   let factory;

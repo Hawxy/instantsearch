@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`default render renders correctly 1`] = `
-<div class="ais-Panel">
+<div class="ais-Panel ais-Panel--noRefinement">
   <div class="ais-Panel-body">
     <p>
       This is the body of the Panel.

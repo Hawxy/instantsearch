@@ -7,7 +7,7 @@ import instantsearch from 'instantsearch.js/es';
 
 import { version } from '../../../package.json';
 import { mount, nextTick } from '../../../test/utils';
-import { isVue3, version as vueVersion } from '../../util/vue-compat';
+import { version as vueVersion } from '../../util/vue-compat';
 import { warn } from '../../util/warn';
 import InstantSearch from '../InstantSearch';
 import '../../../test/utils/sortedHtmlSerializer';
@@ -69,37 +69,13 @@ These have been replaced by search-client.
 
 See more info here: https://www.algolia.com/doc/api-reference/widgets/instantsearch/vue/#widget-param-search-client`);
 
-  if (isVue3) {
-    // eslint-disable-next-line jest/no-conditional-expect
-    expect(global.console.warn.mock.calls[0][0]).toMatchInlineSnapshot(
-      `"[Vue warn]: Invalid prop: custom validator check failed for prop \\"apiKey\\"."`
-    );
+  expect(global.console.warn.mock.calls[0][0]).toMatchInlineSnapshot(
+    `"[Vue warn]: Invalid prop: custom validator check failed for prop \\"apiKey\\"."`
+  );
 
-    // eslint-disable-next-line jest/no-conditional-expect
-    expect(global.console.warn.mock.calls[1][0]).toMatchInlineSnapshot(
-      `"[Vue warn]: Invalid prop: custom validator check failed for prop \\"appId\\"."`
-    );
-  } else {
-    // eslint-disable-next-line jest/no-conditional-expect
-    expect(global.console.error.mock.calls[0][0]).toMatchInlineSnapshot(`
-"[Vue warn]: Invalid prop: custom validator check failed for prop \\"apiKey\\".
-
-found in
-
----> <AisInstantSearch>
-       <Root>"
-`);
-
-    // eslint-disable-next-line jest/no-conditional-expect
-    expect(global.console.error.mock.calls[1][0]).toMatchInlineSnapshot(`
-"[Vue warn]: Invalid prop: custom validator check failed for prop \\"appId\\".
-
-found in
-
----> <AisInstantSearch>
-       <Root>"
-`);
-  }
+  expect(global.console.warn.mock.calls[1][0]).toMatchInlineSnapshot(
+    `"[Vue warn]: Invalid prop: custom validator check failed for prop \\"appId\\"."`
+  );
 });
 
 it('calls `start` on the next tick', async () => {
@@ -261,22 +237,9 @@ it('does not allow `routing` to be a boolean', () => {
     },
   });
 
-  if (isVue3) {
-    // eslint-disable-next-line jest/no-conditional-expect
-    expect(global.console.warn.mock.calls[0][0]).toMatchInlineSnapshot(
-      `"[Vue warn]: Invalid prop: custom validator check failed for prop \\"routing\\"."`
-    );
-  } else {
-    // eslint-disable-next-line jest/no-conditional-expect
-    expect(global.console.error.mock.calls[0][0]).toMatchInlineSnapshot(`
-"[Vue warn]: Invalid prop: custom validator check failed for prop \\"routing\\".
-
-found in
-
----> <AisInstantSearch>
-       <Root>"
-`);
-  }
+  expect(global.console.warn.mock.calls[0][0]).toMatchInlineSnapshot(
+    `"[Vue warn]: Invalid prop: custom validator check failed for prop \\"routing\\"."`
+  );
 
   expect(warn)
     .toHaveBeenCalledWith(`The \`routing\` option expects an object with \`router\` and/or \`stateMapping\`.

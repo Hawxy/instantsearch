@@ -3,9 +3,9 @@
  */
 
 import { mount } from '../../../test/utils';
-import { __setState } from '../../mixins/widget';
+import { __setState } from '../../composables/useWidget';
 import VoiceSearch from '../VoiceSearch.vue';
-jest.mock('../../mixins/widget');
+jest.mock('../../composables/useWidget');
 import '../../../test/utils/sortedHtmlSerializer';
 
 const defaultState = {

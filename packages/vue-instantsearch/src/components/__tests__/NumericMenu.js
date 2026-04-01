@@ -3,12 +3,12 @@
  */
 
 import { mount } from '../../../test/utils';
-import { __setState } from '../../mixins/widget';
+import { __setState } from '../../composables/useWidget';
 import NumericMenu from '../NumericMenu.vue';
 import '../../../test/utils/sortedHtmlSerializer';
 
-jest.mock('../../mixins/widget');
-jest.mock('../../mixins/panel');
+jest.mock('../../composables/useWidget');
+jest.mock('../../composables/usePanel');
 
 const all = {
   label: 'All',

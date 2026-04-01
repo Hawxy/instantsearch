@@ -5,7 +5,6 @@
 import mitt from 'mitt';
 
 import { mount, nextTick } from '../../../test/utils';
-import { isVue3 } from '../../util/vue-compat';
 import {
   createPanelProviderMixin,
   createPanelConsumerMixin,
@@ -111,19 +110,7 @@ describe('createPanelConsumerMixin', () => {
     expect(emitter.emit).toHaveBeenCalledTimes(1);
     expect(emitter.emit).toHaveBeenLastCalledWith(PANEL_CHANGE_EVENT, false);
 
-    if (isVue3) {
-      await wrapper.setData({ state: { canRefine: true } });
-    } else {
-      // ↓ this should be replaceable with `wrapper.setData()` but it didn't
-      // trigger the watcher in `createPanelConsumerMixin`.
-      // It's probably a bug from vue-test-utils.
-      // https://github.com/vuejs/vue-test-utils/issues/1756
-      // https://github.com/vuejs/vue-test-utils/issues/149
-      wrapper.vm.$set(wrapper.vm, 'state', {
-        canRefine: true,
-      });
-      await nextTick();
-    }
+    await wrapper.setData({ state: { canRefine: true } });
 
     expect(emitter.emit).toHaveBeenCalledTimes(2);
     expect(emitter.emit).toHaveBeenLastCalledWith(PANEL_CHANGE_EVENT, true);
@@ -199,12 +186,7 @@ describe('createPanelConsumerMixin', () => {
     expect(emitter.emit).toHaveBeenCalledTimes(1);
     expect(emitter.emit).toHaveBeenLastCalledWith(PANEL_CHANGE_EVENT, true);
 
-    if (isVue3) {
-      await wrapper.setData({ state: null });
-    } else {
-      wrapper.vm.$set(wrapper.vm, 'state', null);
-      await nextTick();
-    }
+    await wrapper.setData({ state: null });
 
     expect(emitter.emit).toHaveBeenCalledTimes(1);
   });
@@ -229,22 +211,12 @@ describe('createPanelConsumerMixin', () => {
     expect(emitter.emit).toHaveBeenCalledTimes(1);
     expect(emitter.emit).toHaveBeenLastCalledWith(PANEL_CHANGE_EVENT, true);
 
-    if (isVue3) {
-      await wrapper.setData({ state: { canRefine: false } });
-    } else {
-      wrapper.vm.$set(wrapper.vm, 'state', { canRefine: false });
-      await nextTick();
-    }
+    await wrapper.setData({ state: { canRefine: false } });
 
     expect(emitter.emit).toHaveBeenCalledTimes(2);
     expect(emitter.emit).toHaveBeenLastCalledWith(PANEL_CHANGE_EVENT, false);
 
-    if (isVue3) {
-      await wrapper.setData({ state: { canRefine: false } });
-    } else {
-      wrapper.vm.$set(wrapper.vm, 'state', { canRefine: false });
-      await nextTick();
-    }
+    await wrapper.setData({ state: { canRefine: false } });
 
     expect(emitter.emit).toHaveBeenCalledTimes(2);
   });

@@ -114,5 +114,5 @@ export default {
         bannerLink: this.classNames['ais-Hits-banner-link'],
       },
     });
-  }),
+  },
 };

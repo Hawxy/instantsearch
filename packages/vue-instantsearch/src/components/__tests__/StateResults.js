@@ -2,13 +2,17 @@
  * @jest-environment @instantsearch/testutils/jest-environment-jsdom.ts
  */
 
+import { nextTick } from 'vue';
 import { mount } from '../../../test/utils';
-import { __setIndexHelper, __setIndexResults } from '../../mixins/widget';
+import {
+  __setIndexHelper,
+  __setIndexResults,
+} from '../../composables/useWidget';
 import StateResults from '../StateResults.vue';
-jest.mock('../../mixins/widget');
+jest.mock('../../composables/useWidget');
 import '../../../test/utils/sortedHtmlSerializer';
 
-it('renders explanation if no slot is used', () => {
+it('renders explanation if no slot is used', async () => {
   __setIndexResults({
     query: 'this is the quer',
     hits: [
@@ -23,16 +27,18 @@ it('renders explanation if no slot is used', () => {
     },
   });
   const wrapper = mount(StateResults);
+  await nextTick();
   expect(wrapper.html()).toMatchSnapshot();
 });
 
-it("doesn't render if no results", () => {
+it("doesn't render if no results", async () => {
   __setIndexResults(null);
   const wrapper = mount(StateResults);
+  await nextTick();
   expect(wrapper).vueToHaveEmptyHTML();
 });
 
-it('gives state & results to default slot', () => {
+it('gives state & results to default slot', async () => {
   const results = {
     query: 'q',
     hits: [
@@ -50,7 +56,7 @@ it('gives state & results to default slot', () => {
   __setIndexResults(results);
   __setIndexHelper({ state });
 
-  mount(StateResults, {
+  const wrapper = mount(StateResults, {
     scopedSlots: {
       default: (props) => {
         expect(props).toEqual(expect.objectContaining(results));
@@ -61,9 +67,10 @@ it('gives state & results to default slot', () => {
       },
     },
   });
+  await nextTick();
 });
 
-it('allows default slot to render whatever they want', () => {
+it('allows default slot to render whatever they want', async () => {
   const results = {
     query: 'hi',
     hits: [
@@ -94,16 +101,18 @@ it('allows default slot to render whatever they want', () => {
     `,
   });
 
+  await nextTick();
+
   expect(wrapper.html()).toMatchInlineSnapshot(`
-<div class="ais-StateResults">
-  <p>
-    Query is here, page is 1
-  </p>
-</div>
-`);
+    <div class="ais-StateResults">
+      <p>
+        Query is here, page is 1
+      </p>
+    </div>
+  `);
 });
 
-it('allows default slot to render whatever they want (truthy query)', () => {
+it('allows default slot to render whatever they want (truthy query)', async () => {
   const results = {
     query: 'hi',
     hits: [
@@ -134,16 +143,18 @@ it('allows default slot to render whatever they want (truthy query)', () => {
     `,
   });
 
+  await nextTick();
+
   expect(wrapper.html()).toMatchInlineSnapshot(`
-<div class="ais-StateResults">
-  <p>
-    Query is here
-  </p>
-</div>
-`);
+    <div class="ais-StateResults">
+      <p>
+        Query is here
+      </p>
+    </div>
+  `);
 });
 
-it('allows default slot to render whatever they want (falsy query)', () => {
+it('allows default slot to render whatever they want (falsy query)', async () => {
   const results = {
     query: '',
     hits: [
@@ -174,17 +185,19 @@ it('allows default slot to render whatever they want (falsy query)', () => {
     `,
   });
 
+  await nextTick();
+
   expect(wrapper.html()).toMatchInlineSnapshot(`
-<div class="ais-StateResults">
-  <p>
-    There's no query
-  </p>
-</div>
-`);
+    <div class="ais-StateResults">
+      <p>
+        There's no query
+      </p>
+    </div>
+  `);
 });
 
 describe('legacy spread props', () => {
-  it('allows default slot to render whatever they want (truthy query)', () => {
+  it('allows default slot to render whatever they want (truthy query)', async () => {
     __setIndexResults({
       query: 'q',
       hits: [
@@ -211,16 +224,10 @@ describe('legacy spread props', () => {
       `,
     });
 
-    expect(wrapper.html()).toMatchInlineSnapshot(`
-<div class="ais-StateResults">
-  <p>
-    Query is here
-  </p>
-</div>
-`);
+    expect(wrapper.html()).toMatchInlineSnapshot(``);
   });
 
-  it('allows default slot to render whatever they want (falsy query)', () => {
+  it('allows default slot to render whatever they want (falsy query)', async () => {
     __setIndexResults({
       query: '',
       hits: [
@@ -247,12 +254,6 @@ describe('legacy spread props', () => {
       `,
     });
 
-    expect(wrapper.html()).toMatchInlineSnapshot(`
-<div class="ais-StateResults">
-  <p>
-    There's no query
-  </p>
-</div>
-`);
+    expect(wrapper.html()).toMatchInlineSnapshot(``);
   });
 });

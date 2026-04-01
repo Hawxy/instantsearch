@@ -1,9 +1,3 @@
-import {
-  isVue3,
-  isVue2,
-  // @ts-ignore file isn't typed
-} from '../../../packages/vue-instantsearch/src/util/vue-compat';
-
 type VueTestWrapper = {
   html: () => string;
   attributes: (attribute: string) => string;
@@ -13,10 +7,7 @@ export const vueToHaveEmptyHTML: jest.CustomMatcher = (
   wrapper: VueTestWrapper
 ) => {
   const html = wrapper.html();
-  if (
-    (isVue2 && html === '') ||
-    (isVue3 && ['<!---->', '<!--v-if-->'].includes(html))
-  ) {
+  if (['', '<!---->', '<!--v-if-->'].includes(html)) {
     return {
       pass: true,
       message: () => '',
@@ -32,13 +23,9 @@ export const vueToHaveEmptyHTML: jest.CustomMatcher = (
 const toHaveBooleanAttribute =
   (attribute: string): jest.CustomMatcher =>
   (wrapper: VueTestWrapper) => {
-    // :hidden="true" becomes
-    // hidden="hidden" in Vue 2 and
-    // hidden="" in Vue 3.
-
-    // So we need this to write correct tests to match them in both versions.
+    // In Vue 3, :hidden="true" becomes hidden=""
     const value = wrapper.attributes(attribute);
-    if ((isVue2 && value === attribute) || (isVue3 && value === '')) {
+    if (value === '') {
       return {
         pass: true,
         message: () => '',

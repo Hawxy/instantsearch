@@ -2,9 +2,13 @@
  * @jest-environment @instantsearch/testutils/jest-environment-jsdom.ts
  */
 
+import { nextTick } from 'vue';
 import { mount } from '../../../test/utils';
+import { __setCanRefine } from '../../composables/usePanel';
 import Panel from '../Panel.vue';
 import '../../../test/utils/sortedHtmlSerializer';
+
+jest.mock('../../composables/usePanel');
 
 describe('default render', () => {
   const defaultSlot = `
@@ -22,20 +26,22 @@ describe('default render', () => {
   });
 
   it('renders correctly without refinement', async () => {
+    __setCanRefine(false);
+
     const wrapper = mount(Panel, {
       slots: {
         default: defaultSlot,
       },
     });
 
-    await wrapper.setData({
-      canRefine: false,
-    });
+    await nextTick();
 
     expect(wrapper.html()).toMatchSnapshot();
   });
 
   it('passes data without refinement', async () => {
+    __setCanRefine(false);
+
     const defaultScopedSlot = jest.fn();
     const headerScopedSlot = jest.fn();
     const footerScopedSlot = jest.fn();
@@ -47,9 +53,7 @@ describe('default render', () => {
       },
     });
 
-    await wrapper.setData({
-      canRefine: false,
-    });
+    await nextTick();
 
     expect(defaultScopedSlot).toHaveBeenCalledWith({ hasRefinements: false });
     expect(headerScopedSlot).toHaveBeenCalledWith({ hasRefinements: false });
@@ -57,6 +61,8 @@ describe('default render', () => {
   });
 
   it('passes data with refinement', async () => {
+    __setCanRefine(true);
+
     const defaultScopedSlot = jest.fn();
     const headerScopedSlot = jest.fn();
     const footerScopedSlot = jest.fn();
@@ -68,9 +74,7 @@ describe('default render', () => {
       },
     });
 
-    await wrapper.setData({
-      canRefine: true,
-    });
+    await nextTick();
 
     expect(defaultScopedSlot).toHaveBeenCalledWith({ hasRefinements: true });
     expect(headerScopedSlot).toHaveBeenCalledWith({ hasRefinements: true });

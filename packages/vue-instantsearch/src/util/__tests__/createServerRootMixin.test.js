@@ -8,11 +8,8 @@ import {
   SearchParameters,
   SearchResults,
 } from 'algoliasearch-helper';
-import VueI18n from 'vue-i18n';
-import { createI18n } from 'vue-i18n-vue3';
-import Router from 'vue-router';
-import Vuex from 'vuex';
-import { createStore } from 'vuex4';
+import { createI18n } from 'vue-i18n';
+import { createStore } from 'vuex';
 
 import { mount, createSSRApp } from '../../../test/utils';
 import Configure from '../../components/Configure';
@@ -23,21 +20,12 @@ import { createWidgetMixin } from '../../mixins/widget';
 import { createServerRootMixin } from '../createServerRootMixin';
 import { createFakeClient } from '../testutils/client';
 import { createSerializedState } from '../testutils/helper';
-import { isVue3, isVue2, Vue2, renderCompat } from '../vue-compat';
+import { renderCompat } from '../vue-compat';
 
 jest.unmock('instantsearch.js/es');
 
 function renderToString(app) {
-  if (isVue3) {
-    return require('@vue/server-renderer').renderToString(app);
-  } else {
-    return new Promise((resolve, reject) => {
-      require('vue-server-renderer/basic')(app, (err, res) => {
-        if (err) reject(err);
-        resolve(res);
-      });
-    });
-  }
+  return require('@vue/server-renderer').renderToString(app);
 }
 
 const forceIsServerMixin = {
@@ -388,23 +376,14 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
 
     it('forwards router', async () => {
       const searchClient = createFakeClient();
-      let router;
-      if (isVue3) {
-        const Router4 = require('vue-router4');
-        router = Router4.createRouter({
-          history: Router4.createMemoryHistory(),
-          routes: [{ path: '', component: {} }],
-        });
-      } else {
-        router = new Router({});
-      }
+      const Router4 = require('vue-router');
+      const router = Router4.createRouter({
+        history: Router4.createMemoryHistory(),
+        routes: [{ path: '', component: {} }],
+      });
 
       // there are two renders of App, each with an assertion
       expect.assertions(2);
-
-      if (isVue2) {
-        Vue2.use(Router);
-      }
 
       const App = {
         mixins: [
@@ -439,11 +418,8 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
       const wrapper = createSSRApp({
         mixins: [forceIsServerMixin],
         render: renderCompat((h) => h(App)),
-        ...(isVue2 ? { router } : {}),
       });
-      if (isVue3) {
-        wrapper.use(router);
-      }
+      wrapper.use(router);
 
       await renderToString(wrapper);
     });
@@ -451,10 +427,7 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
     it('forwards vuex', async () => {
       const searchClient = createFakeClient();
 
-      if (isVue2) {
-        Vue2.use(Vuex);
-      }
-      const store = isVue3 ? createStore() : new Vuex.Store();
+      const store = createStore();
 
       // there are two renders of App, each with an assertion
       expect.assertions(2);
@@ -491,13 +464,10 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
 
       const wrapper = createSSRApp({
         mixins: [forceIsServerMixin],
-        ...(isVue2 ? { store } : {}),
         render: renderCompat((h) => h(App)),
       });
 
-      if (isVue3) {
-        wrapper.use(store);
-      }
+      wrapper.use(store);
 
       await renderToString(wrapper);
     });
@@ -505,11 +475,7 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
     it('forwards i18n', async () => {
       const searchClient = createFakeClient();
 
-      if (isVue2) {
-        Vue2.use(VueI18n);
-      }
-
-      const i18n = isVue3 ? createI18n() : new VueI18n();
+      const i18n = createI18n();
 
       // there are two renders of App, each with an assertion
       expect.assertions(2);
@@ -523,7 +489,7 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
           }),
         ],
         data() {
-          expect(this.$i18n).toBe(isVue3 ? i18n.global : i18n);
+          expect(this.$i18n).toBe(i18n.global);
           return {};
         },
         render: renderCompat((h) =>
@@ -546,419 +512,13 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
 
       const wrapper = createSSRApp({
         mixins: [forceIsServerMixin],
-        ...(isVue2 ? { i18n } : {}),
         render: renderCompat((h) => h(App)),
       });
 
-      if (isVue3) {
-        wrapper.use(i18n);
-      }
+      wrapper.use(i18n);
 
       await renderToString(wrapper);
     });
-
-    if (isVue2) {
-      it('forwards props', async () => {
-        const searchClient = createFakeClient();
-
-        // there are two renders of App, each with an assertion
-        expect.assertions(2);
-
-        const someProp = { data: Math.random() };
-
-        const App = {
-          mixins: [
-            forceIsServerMixin,
-            createServerRootMixin({
-              searchClient,
-              indexName: 'hello',
-            }),
-          ],
-          props: {
-            someProp: {
-              required: true,
-              type: Object,
-              validator(value) {
-                expect(value).toBe(someProp);
-                return value === someProp;
-              },
-            },
-          },
-          render: renderCompat((h) =>
-            h(InstantSearchSsr, {}, [
-              h(Configure, {
-                attrs: {
-                  hitsPerPage: 100,
-                },
-              }),
-              h(SearchBox),
-            ])
-          ),
-          serverPrefetch() {
-            return this.instantsearch.findResultsState({
-              component: this,
-              renderToString,
-            });
-          },
-        };
-
-        const wrapper = createSSRApp({
-          mixins: [forceIsServerMixin],
-          render: renderCompat((h) => h(App, { props: { someProp } })),
-        });
-
-        await renderToString(wrapper);
-      });
-
-      it('forwards slots', () => {
-        const searchClient = createFakeClient();
-
-        expect.assertions(2);
-
-        return new Promise((resolve, reject) => {
-          const App = {
-            mixins: [
-              forceIsServerMixin,
-              createServerRootMixin({
-                searchClient,
-                indexName: 'hello',
-              }),
-            ],
-            components: { InstantSearchSsr },
-            template: `
-            <InstantSearchSsr>
-              <slot />
-            </InstantSearchSsr>
-          `,
-            serverPrefetch() {
-              return (
-                this.instantsearch
-                  .findResultsState({ component: this, renderToString })
-                  .then((res) => {
-                    // eslint-disable-next-line jest/no-conditional-expect
-                    expect(
-                      this.instantsearch.mainIndex
-                        .getWidgets()
-                        .map((w) => w.$$type)
-                    ).toEqual(['ais.configure']);
-
-                    // eslint-disable-next-line jest/no-conditional-expect
-                    expect(res.hello.state.hitsPerPage).toBe(100);
-                  })
-                  // jest throws an error we need to catch, since stuck in the flow
-                  .catch((e) => {
-                    reject(e);
-                  })
-              );
-            },
-          };
-
-          const wrapper = createSSRApp({
-            mixins: [forceIsServerMixin],
-            components: { App, Configure },
-            template: `
-          <App>
-            <Configure :hits-per-page.camel="100" />
-          </App>
-        `,
-          });
-
-          renderToString(wrapper).then(resolve);
-        });
-      });
-
-      // TODO: forwarding of scoped slots doesn't yet work.
-      it.skip('forwards scoped slots', async (done) => {
-        const searchClient = createFakeClient();
-
-        expect.assertions(2);
-
-        const App = {
-          mixins: [
-            forceIsServerMixin,
-            createServerRootMixin({
-              searchClient,
-              indexName: 'hello',
-            }),
-          ],
-          render: renderCompat((h) =>
-            h(InstantSearchSsr, {}, [this.$scopedSlots.default({ test: true })])
-          ),
-          serverPrefetch() {
-            return (
-              this.instantsearch
-                .findResultsState({ component: this, renderToString })
-                .then((res) => {
-                  // eslint-disable-next-line jest/no-conditional-expect
-                  expect(
-                    this.instantsearch.mainIndex
-                      .getWidgets()
-                      .map((w) => w.$$type)
-                  ).toEqual(['ais.configure']);
-
-                  // eslint-disable-next-line jest/no-conditional-expect
-                  expect(res.hello._state.hitsPerPage).toBe(100);
-                })
-                // jest throws an error we need to catch, since stuck in the flow
-                .catch((e) => {
-                  done(e);
-                })
-            );
-          },
-        };
-
-        const wrapper = createSSRApp({
-          mixins: [forceIsServerMixin],
-          render: renderCompat((h) =>
-            h(App, {
-              scopedSlots: {
-                default({ test }) {
-                  if (test) {
-                    return h(Configure, {
-                      hitsPerPage: 100,
-                    });
-                  }
-                  return null;
-                },
-              },
-            })
-          ),
-        });
-
-        await renderToString(wrapper);
-        done();
-      });
-
-      it('forwards root', async () => {
-        const searchClient = createFakeClient();
-
-        // there are two renders of App, each with an assertion
-        expect.assertions(2);
-
-        const App = {
-          mixins: [
-            forceIsServerMixin,
-            createServerRootMixin({
-              searchClient,
-              indexName: 'hello',
-            }),
-          ],
-          render: renderCompat(function (h) {
-            // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            expect(this.$root).toBe(wrapper);
-            return h(InstantSearchSsr, {}, [
-              h(Configure, {
-                attrs: {
-                  hitsPerPage: 100,
-                },
-              }),
-              h(SearchBox),
-            ]);
-          }),
-          serverPrefetch() {
-            return this.instantsearch.findResultsState({
-              component: this,
-              renderToString,
-            });
-          },
-        };
-
-        const wrapper = createSSRApp({
-          mixins: [forceIsServerMixin],
-          render: renderCompat((h) => h(App)),
-        });
-
-        await renderToString(wrapper);
-      });
-
-      it('forwards nuxt', async () => {
-        const searchClient = createFakeClient();
-
-        let nuxt = 0;
-        // every time the function gets called, we get a different "nuxt"
-        // this can be used to assert both "nuxt" objects are equal
-        const getNuxtCounter = () => ++nuxt;
-
-        // there are two renders of App, each with an assertion
-        expect.assertions(2);
-
-        const App = {
-          mixins: [
-            {
-              beforeCreate() {
-                this.$nuxt = getNuxtCounter();
-              },
-            },
-            forceIsServerMixin,
-            createServerRootMixin({
-              searchClient,
-              indexName: 'hello',
-            }),
-          ],
-          data() {
-            expect(this.$nuxt).toEqual(1);
-            return {};
-          },
-          render: renderCompat((h) =>
-            h(InstantSearchSsr, {}, [
-              h(Configure, {
-                attrs: {
-                  hitsPerPage: 100,
-                },
-              }),
-              h(SearchBox),
-            ])
-          ),
-          serverPrefetch() {
-            return this.instantsearch.findResultsState({
-              component: this,
-              renderToString,
-            });
-          },
-        };
-
-        const wrapper = createSSRApp({
-          mixins: [forceIsServerMixin],
-          render: renderCompat((h) => h(App)),
-        });
-
-        await renderToString(wrapper);
-      });
-
-      it('searches only once', async () => {
-        const searchClient = createFakeClient();
-        const app = {
-          mixins: [
-            forceIsServerMixin,
-            createServerRootMixin({
-              searchClient,
-              indexName: 'hello',
-            }),
-          ],
-          render: renderCompat((h) =>
-            /**
-             * This code triggers this warning in Vue 3:
-             * > Non-function value encountered for default slot. Prefer function slots for better performance.
-             *
-             * To fix it, replace the third argument
-             * > [h(...), h(...)]
-             * with
-             * > { default: () => [h(...), h(...)] }
-             *
-             * but it's not important (and not compatible in vue2), we're leaving it as-is.
-             */
-            h(InstantSearchSsr, {}, [
-              h(Configure, {
-                attrs: {
-                  hitsPerPage: 100,
-                },
-              }),
-              h(SearchBox),
-            ])
-          ),
-          serverPrefetch() {
-            return this.instantsearch.findResultsState({
-              component: this,
-              renderToString,
-            });
-          },
-        };
-
-        const wrapper = createSSRApp({
-          mixins: [forceIsServerMixin],
-          render: renderCompat((h) => h(app)),
-        });
-
-        await renderToString(wrapper);
-
-        expect(searchClient.search).toHaveBeenCalledTimes(1);
-        expect(searchClient.search.mock.calls[0][0]).toMatchInlineSnapshot(`
-          [
-            {
-              "indexName": "hello",
-              "params": {
-                "hitsPerPage": 100,
-                "query": "",
-              },
-            },
-          ]
-        `);
-      });
-
-      it('works when component is at root (and therefore has no $vnode)', async () => {
-        const searchClient = createFakeClient();
-        let mainIndex;
-
-        const app = {
-          render: renderCompat((h) =>
-            /**
-             * This code triggers this warning in Vue 3:
-             * > Non-function value encountered for default slot. Prefer function slots for better performance.
-             *
-             * To fix it, replace the third argument
-             * > [h(...), h(...)]
-             * with
-             * > { default: () => [h(...), h(...)] }
-             *
-             * but it's not important (and not compatible in vue2), we're leaving it as-is.
-             */
-            h(InstantSearchSsr, {}, [
-              h(Configure, {
-                attrs: {
-                  hitsPerPage: 100,
-                },
-              }),
-              h(SearchBox),
-            ])
-          ),
-        };
-
-        const wrapper = createSSRApp({
-          mixins: [
-            forceIsServerMixin,
-            createServerRootMixin({
-              searchClient,
-              indexName: 'hello',
-            }),
-          ],
-          serverPrefetch() {
-            return this.instantsearch.findResultsState({
-              component: this,
-              renderToString,
-            });
-          },
-          created() {
-            mainIndex = this.instantsearch.mainIndex;
-          },
-          render: renderCompat((h) => h(app)),
-        });
-
-        await renderToString(wrapper);
-
-        expect(mainIndex.getWidgetUiState({})).toMatchInlineSnapshot(`
-          {
-            "hello": {
-              "configure": {
-                "hitsPerPage": 100,
-              },
-            },
-          }
-        `);
-
-        expect(searchClient.search).toHaveBeenCalledTimes(1);
-        expect(searchClient.search.mock.calls[0][0]).toMatchInlineSnapshot(`
-          [
-            {
-              "indexName": "hello",
-              "params": {
-                "hitsPerPage": 100,
-                "query": "",
-              },
-            },
-          ]
-        `);
-      });
-    }
   });
 
   describe('hydrate', () => {
