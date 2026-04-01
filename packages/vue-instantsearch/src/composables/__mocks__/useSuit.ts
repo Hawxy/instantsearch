@@ -1,5 +1,15 @@
-import { suit as suitFn } from '../../util/suit';
+import suitUtil from '../../util/suit';
 
-export const useSuit = jest.fn((name, classNames) => ({
-  suit: (...args) => suitFn(name, classNames && classNames.value, ...args),
+import type { ComputedRef } from 'vue';
+
+export const useSuit = jest.fn((name: string, classNames?: ComputedRef<Record<string, string> | undefined>) => ({
+  suit: (element?: string, modifier?: string) => {
+    const className = suitUtil(name, element, modifier);
+    const userClassName =
+      classNames && classNames.value && classNames.value[className];
+    if (userClassName) {
+      return [className, userClassName].join(' ');
+    }
+    return className;
+  },
 }));

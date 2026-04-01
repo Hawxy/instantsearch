@@ -16,7 +16,7 @@ import Configure from '../../components/Configure';
 import Index from '../../components/Index';
 import InstantSearchSsr from '../../components/InstantSearchSsr';
 import SearchBox from '../../components/SearchBox.vue';
-import { createWidgetMixin } from '../../mixins/widget';
+import { useWidget } from '../../composables/useWidget';
 import { createServerRootMixin } from '../createServerRootMixin';
 import { createFakeClient } from '../testutils/client';
 import { createSerializedState } from '../testutils/helper';
@@ -92,7 +92,10 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
       };
 
       const Child = {
-        mixins: [createWidgetMixin({ connector: true })],
+        setup() {
+          const { instantSearchInstance } = useWidget({ connector: true });
+          return { instantSearchInstance };
+        },
         mounted() {
           expect(this.instantSearchInstance).toEqual(
             expect.objectContaining({

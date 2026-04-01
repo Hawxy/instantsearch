@@ -15,15 +15,15 @@ import {
   connectRefinementList,
   connectToggleRefinement,
 } from 'instantsearch.js/es/connectors/index.umd';
+import { h, computed, defineComponent } from 'vue';
 
 import { nextTick, mountApp } from '../../test/utils';
+import { useWidget } from '../composables/useWidget';
 import {
   AisInstantSearch,
   AisMenu,
   AisRefinementList,
-  createWidgetMixin,
 } from '../instantsearch';
-import { renderCompat } from '../util/vue-compat';
 jest.unmock('instantsearch.js/es');
 
 const testSetups = {
@@ -37,22 +37,18 @@ const testSetups = {
       requiredProps: ['attribute'],
       urlValue: 'value',
       refineComponents: [
-        (h, state) =>
+        (state) =>
           h(
             'form',
             {
-              on: {
-                submit: (event) => {
-                  state.refine(event.currentTarget.elements[0].value);
-                },
+              onSubmit: (event) => {
+                state.refine(event.currentTarget.elements[0].value);
               },
             },
             [
               h('input', {
-                attrs: {
-                  type: 'text',
-                  'data-testid': 'RefinementList-refine-input',
-                },
+                type: 'text',
+                'data-testid': 'RefinementList-refine-input',
               }),
             ]
           ),
@@ -61,11 +57,11 @@ const testSetups = {
 
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(CustomRefinementList, { props: widgetParams }),
-          ])
-        ),
+        render() {
+          return h(AisInstantSearch, instantSearchOptions, () => [
+            h(CustomRefinementList, widgetParams),
+          ]);
+        },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -82,22 +78,18 @@ const testSetups = {
       requiredProps: ['attributes'],
       urlValue: 'value',
       refineComponents: [
-        (h, state) =>
+        (state) =>
           h(
             'form',
             {
-              on: {
-                submit: (event) => {
-                  state.refine(event.currentTarget.elements[0].value);
-                },
+              onSubmit: (event) => {
+                state.refine(event.currentTarget.elements[0].value);
               },
             },
             [
               h('input', {
-                attrs: {
-                  type: 'text',
-                  'data-testid': 'HierarchicalMenu-refine-input',
-                },
+                type: 'text',
+                'data-testid': 'HierarchicalMenu-refine-input',
               }),
             ]
           ),
@@ -106,11 +98,11 @@ const testSetups = {
 
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(CustomHierarchicalMenu, { props: widgetParams }),
-          ])
-        ),
+        render() {
+          return h(AisInstantSearch, instantSearchOptions, () => [
+            h(CustomHierarchicalMenu, widgetParams),
+          ]);
+        },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -128,11 +120,11 @@ const testSetups = {
 
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(CustomBreadcrumb, { props: widgetParams }),
-          ])
-        ),
+        render() {
+          return h(AisInstantSearch, instantSearchOptions, () => [
+            h(CustomBreadcrumb, widgetParams),
+          ]);
+        },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -146,22 +138,18 @@ const testSetups = {
       requiredProps: ['attribute'],
       urlValue: 'value',
       refineComponents: [
-        (h, state) =>
+        (state) =>
           h(
             'form',
             {
-              on: {
-                submit: (event) => {
-                  state.refine(event.currentTarget.elements[0].value);
-                },
+              onSubmit: (event) => {
+                state.refine(event.currentTarget.elements[0].value);
               },
             },
             [
               h('input', {
-                attrs: {
-                  type: 'text',
-                  'data-testid': 'Menu-refine-input',
-                },
+                type: 'text',
+                'data-testid': 'Menu-refine-input',
               }),
             ]
           ),
@@ -170,12 +158,12 @@ const testSetups = {
 
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(CustomMenu, { props: widgetParams }),
-            h(AisMenu, { props: widgetParams }),
-          ])
-        ),
+        render() {
+          return h(AisInstantSearch, instantSearchOptions, () => [
+            h(CustomMenu, widgetParams),
+            h(AisMenu, widgetParams),
+          ]);
+        },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -192,11 +180,11 @@ const testSetups = {
 
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(CustomPagination, { props: widgetParams }),
-          ])
-        ),
+        render() {
+          return h(AisInstantSearch, instantSearchOptions, () => [
+            h(CustomPagination, widgetParams),
+          ]);
+        },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -226,12 +214,12 @@ const testSetups = {
 
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(CustomCurrentRefinements, { props: widgetParams }),
-            h(AisRefinementList, { props: { attribute: 'brand' } }),
-          ])
-        ),
+        render() {
+          return h(AisInstantSearch, instantSearchOptions, () => [
+            h(CustomCurrentRefinements, widgetParams),
+            h(AisRefinementList, { attribute: 'brand' }),
+          ]);
+        },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -252,11 +240,11 @@ const testSetups = {
 
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(CustomHitsPerPage, { props: widgetParams }),
-          ])
-        ),
+        render() {
+          return h(AisInstantSearch, instantSearchOptions, () => [
+            h(CustomHitsPerPage, widgetParams),
+          ]);
+        },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -276,11 +264,11 @@ const testSetups = {
 
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(CustomNumericMenu, { props: widgetParams }),
-          ])
-        ),
+        render() {
+          return h(AisInstantSearch, instantSearchOptions, () => [
+            h(CustomNumericMenu, widgetParams),
+          ]);
+        },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -298,11 +286,11 @@ const testSetups = {
 
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(CustomRatingMenu, { props: widgetParams }),
-          ])
-        ),
+        render() {
+          return h(AisInstantSearch, instantSearchOptions, () => [
+            h(CustomRatingMenu, widgetParams),
+          ]);
+        },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -328,11 +316,11 @@ const testSetups = {
 
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(CustomToggleRefinement, { props }),
-          ])
-        ),
+        render() {
+          return h(AisInstantSearch, instantSearchOptions, () => [
+            h(CustomToggleRefinement, props),
+          ]);
+        },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -354,58 +342,51 @@ function createCustomWidget({
   refineValue,
   requiredProps = [],
   refineComponents = [
-    (h, state) =>
+    (state) =>
       h(
         'button',
         {
-          attrs: {
-            'data-testid': `${name}-refine`,
-          },
-          on: {
-            click: () => {
-              state.refine(
-                typeof refineValue === 'function'
-                  ? refineValue(state)
-                  : refineValue
-              );
-            },
+          'data-testid': `${name}-refine`,
+          onClick: () => {
+            state.refine(
+              typeof refineValue === 'function'
+                ? refineValue(state)
+                : refineValue
+            );
           },
         },
         'REFINE'
       ),
   ],
 }) {
-  return {
+  return defineComponent({
     name: `Custom${name}`,
-    mixins: [createWidgetMixin({ connector })],
     props: Object.fromEntries(
       requiredProps.map((prop) => [prop, { required: true }])
     ),
-    computed: {
-      widgetParams() {
-        return Object.fromEntries(
-          requiredProps.map((prop) => [prop, this[prop]])
-        );
-      },
-    },
-    render: renderCompat(function (h) {
-      return this.state
-        ? h('div', {}, [
-            h(
-              'a',
-              {
-                attrs: {
+    setup(props) {
+      const widgetParams = computed(() =>
+        Object.fromEntries(
+          requiredProps.map((prop) => [prop, props[prop]])
+        )
+      );
+      const { state } = useWidget({ connector }, widgetParams);
+      return () =>
+        state.value
+          ? h('div', {}, [
+              h(
+                'a',
+                {
                   'data-testid': `${name}-link`,
-                  href: this.state.createURL(urlValue),
+                  href: state.value.createURL(urlValue),
                 },
-              },
-              'LINK'
-            ),
-            ...refineComponents.map((component) => component(h, this.state)),
-          ])
-        : null;
-    }),
-  };
+                'LINK'
+              ),
+              ...refineComponents.map((component) => component(state.value)),
+            ])
+          : null;
+    },
+  });
 }
 
 const testOptions = {

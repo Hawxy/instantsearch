@@ -1,8 +1,8 @@
-import { ref } from 'vue';
+import { ref, type Ref } from 'vue';
 
-let canRefineRef = ref(false);
+let canRefineRef: Ref<boolean> = ref(false);
 
-export function __setCanRefine(value) {
+export function __setCanRefine(value: boolean) {
   canRefineRef.value = value;
 }
 

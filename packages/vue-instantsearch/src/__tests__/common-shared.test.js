@@ -16,10 +16,10 @@ import {
   AisInstantSearch,
   AisMenu,
   AisPagination,
-  createWidgetMixin,
 } from '../instantsearch';
-import { renderCompat } from '../util/vue-compat';
+import { useWidget } from '../composables/useWidget';
 jest.unmock('instantsearch.js/es');
+import { h, computed, defineComponent } from 'vue';
 
 const testSetups = {
   async createSharedTests({ instantSearchOptions, widgetParams }) {
@@ -37,19 +37,19 @@ const testSetups = {
 
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(CustomMenu, { props: widgetParams.menu }),
-            h(AisHierarchicalMenu, { props: widgetParams.hierarchicalMenu }),
-            h(AisMenu, { props: widgetParams.menu }),
+        render() {
+          return h(AisInstantSearch, instantSearchOptions, () => [
+            h(CustomMenu, widgetParams.menu),
+            h(AisHierarchicalMenu, widgetParams.hierarchicalMenu),
+            h(AisMenu, widgetParams.menu),
             h(AisBreadcrumb, {
-              props: { attributes: widgetParams.hierarchicalMenu.attributes },
+              attributes: widgetParams.hierarchicalMenu.attributes,
             }),
-            h(AisHits, { props: widgetParams.hits }),
-            h(CustomPagination, { props: widgetParams.pagination }),
-            h(AisPagination, { props: widgetParams.pagination }),
-          ])
-        ),
+            h(AisHits, widgetParams.hits),
+            h(CustomPagination, widgetParams.pagination),
+            h(AisPagination, widgetParams.pagination),
+          ]);
+        },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -59,34 +59,31 @@ const testSetups = {
 };
 
 function createCustomWidget({ connector, name, urlValue, requiredProps = [] }) {
-  return {
+  return defineComponent({
     name: `Custom${name}`,
-    mixins: [createWidgetMixin({ connector })],
     props: Object.fromEntries(
       requiredProps.map((prop) => [prop, { required: true }])
     ),
-    computed: {
-      widgetParams() {
-        return Object.fromEntries(
-          requiredProps.map((prop) => [prop, this[prop]])
-        );
-      },
-    },
-    render: renderCompat(function (h) {
-      return this.state
-        ? h(
-            'a',
-            {
-              attrs: {
+    setup(props) {
+      const widgetParams = computed(() =>
+        Object.fromEntries(
+          requiredProps.map((prop) => [prop, props[prop]])
+        )
+      );
+      const { state } = useWidget({ connector }, widgetParams);
+      return () =>
+        state.value
+          ? h(
+              'a',
+              {
                 'data-testid': `${name}-link`,
-                href: this.state.createURL(urlValue),
+                href: state.value.createURL(urlValue),
               },
-            },
-            'LINK'
-          )
-        : null;
-    }),
-  };
+              'LINK'
+            )
+          : null;
+    },
+  });
 }
 
 const testOptions = {

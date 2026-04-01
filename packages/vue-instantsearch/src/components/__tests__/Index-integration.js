@@ -6,7 +6,7 @@ jest.unmock('instantsearch.js/es');
 import instantsearch from 'instantsearch.js/es';
 
 import { mount } from '../../../test/utils';
-import { createWidgetMixin } from '../../mixins/widget';
+import { useWidget } from '../../composables/useWidget';
 import { createFakeClient } from '../../util/testutils/client';
 import Index from '../Index';
 import '../../../test/utils/sortedHtmlSerializer';
@@ -18,9 +18,9 @@ it('child widgets get added to their parent index', () => {
 
   const ChildComponent = {
     name: 'child',
-    mixins: [createWidgetMixin({ connector: () => () => widgetInstance })],
-    render() {
-      return null;
+    setup() {
+      useWidget({ connector: () => () => widgetInstance });
+      return () => null;
     },
   };
 
@@ -60,9 +60,9 @@ it('child widgets render with right data', () => {
 
   const ChildComponent = {
     name: 'child',
-    mixins: [createWidgetMixin({ connector: () => () => widgetInstance })],
-    render() {
-      return null;
+    setup() {
+      useWidget({ connector: () => () => widgetInstance });
+      return () => null;
     },
   };
 
