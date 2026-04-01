@@ -6,7 +6,7 @@ import { mount } from '../../../test/utils';
 import ConfigureRelatedItems from '../ConfigureRelatedItems';
 import '../../../test/utils/sortedHtmlSerializer';
 
-jest.mock('../../mixins/widget');
+jest.mock('../../composables/useWidget');
 
 it('accepts options from props', () => {
   const props = {

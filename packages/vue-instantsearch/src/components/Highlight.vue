@@ -10,10 +10,10 @@
   />
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
 import { useSuit } from '../composables/useSuit';
-import AisHighlighter from '../util/vue-compat/Highlighter';
+import AisHighlighter from './Highlighter.vue';
 
 defineOptions({ name: 'AisHighlight' });
 

@@ -3,11 +3,11 @@
  */
 
 import { mount } from '../../../test/utils';
-import { __setState } from '../../mixins/widget';
+import { __setState } from '../../composables/useWidget';
 import QueryRuleContext from '../QueryRuleContext';
 import '../../../test/utils/sortedHtmlSerializer';
 
-jest.mock('../../mixins/widget');
+jest.mock('../../composables/useWidget');
 
 it('is renderless', () => {
   __setState({

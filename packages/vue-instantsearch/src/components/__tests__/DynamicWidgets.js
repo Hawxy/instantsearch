@@ -3,10 +3,10 @@
  */
 
 import { mount, nextTick } from '../../../test/utils';
-import { __setState } from '../../mixins/widget';
+import { __setState, useWidget } from '../../composables/useWidget';
 import { AisPanel } from '../../widgets';
 import DynamicWidgets from '../DynamicWidgets';
-jest.mock('../../mixins/widget');
+jest.mock('../../composables/useWidget');
 import '../../../test/utils/sortedHtmlSerializer';
 
 const MockRefinementList = {
@@ -88,7 +88,8 @@ it('passes arguments to connector', () => {
     maxValuesPerFacet: 100,
   });
 
-  expect(dynamicWidgets.vm.widgetParams).toEqual({
+  const widgetParams = useWidget.mock.calls[useWidget.mock.calls.length - 1][1].value;
+  expect(widgetParams).toEqual({
     transformItems,
     facets: ['test'],
     maxValuesPerFacet: 100,

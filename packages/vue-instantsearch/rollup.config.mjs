@@ -52,7 +52,7 @@ const basePlugins = [
 ];
 
 const esm = {
-  input: 'src/instantsearch.js',
+  input: 'src/instantsearch.ts',
   external,
   output: {
     sourcemap: false,

@@ -1,19 +1,21 @@
+<script lang="ts">
 import { createHighlightComponent } from 'instantsearch-ui-components';
 import {
   getHighlightedParts,
   getPropertyByPath,
   unescape,
 } from 'instantsearch.js/es/lib/utils';
+import { defineComponent, type PropType } from 'vue';
 
 import { createElement, Fragment } from '../util/pragma';
 
 const Highlight = createHighlightComponent({ createElement, Fragment });
 
-export default {
+export default defineComponent({
   name: 'AisHighlighter',
   props: {
     hit: {
-      type: Object,
+      type: Object as PropType<Record<string, any>>,
       required: true,
     },
     attribute: {
@@ -25,7 +27,7 @@ export default {
       default: 'mark',
     },
     suit: {
-      type: Function,
+      type: Function as PropType<(element?: string, modifier?: string) => string>,
       required: true,
     },
     highlightProperty: {
@@ -46,10 +48,9 @@ export default {
       getPropertyByPath(this.hit[this.highlightProperty], this.attribute) || [];
     const properties = Array.isArray(property) ? property : [property];
 
-    const parts = properties.map((singleValue) =>
+    const parts = properties.map((singleValue: any) =>
       getHighlightedParts(unescape(singleValue.value || '')).map(
-        ({ value, isHighlighted }) => ({
-          // We have to do this because Vue gets rid of TextNodes with a single white space
+        ({ value, isHighlighted }: { value: string; isHighlighted: boolean }) => ({
           value: value === ' ' ? '  ' : value,
           isHighlighted,
         })
@@ -66,4 +67,5 @@ export default {
       parts,
     });
   },
-};
+});
+</script>

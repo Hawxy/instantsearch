@@ -3,7 +3,7 @@
  */
 
 import { mount, nextTick } from '../../../test/utils';
-import { createWidgetMixin } from '../../mixins/widget';
+import { useWidget } from '../../composables/useWidget';
 import { createFakeClient } from '../../util/testutils/client';
 import InstantSearch from '../InstantSearch';
 import SearchBox from '../SearchBox.vue';
@@ -18,10 +18,9 @@ it('child widgets get added to its parent instantsearch', () => {
   };
 
   const ChildComponent = {
-    mixins: [createWidgetMixin({ connector: () => () => widgetInstance })],
-
-    render() {
-      return null;
+    setup() {
+      useWidget({ connector: () => () => widgetInstance });
+      return () => null;
     },
   };
 

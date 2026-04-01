@@ -41,9 +41,12 @@ function getAllComponents() {
           .find((mixin) => mixin.methods && mixin.methods.suit)
           .methods.suit();
       } else {
-        // <script setup> components: derive suit class from component name
+        // <script setup> / defineComponent components: derive suit class from component name
         // AisSearchBox -> ais-SearchBox, AisRefinementList -> ais-RefinementList
-        const widgetName = name.replace(/^Ais/, '');
+        const suitNameMap = {
+          AisInstantSearchSsr: 'InstantSearch',
+        };
+        const widgetName = suitNameMap[name] || name.replace(/^Ais/, '');
         suitClass = `ais-${widgetName}`;
       }
     } catch (e) {
@@ -83,9 +86,12 @@ function getAllComponents() {
       // <script setup> components don't expose internal state on vm.$refs
       // so we can't get the widget directly. Derive the type from the name.
       if (!mixins) {
+        const widgetTypeMap = {
+          AisExperimentalConfigureRelatedItems: 'ais.configureRelatedItems',
+        };
         const widgetName = name.replace(/^Ais/, '');
         widget = {
-          $$widgetType: `ais.${widgetName[0].toLowerCase()}${widgetName.slice(1)}`,
+          $$widgetType: widgetTypeMap[name] || `ais.${widgetName[0].toLowerCase()}${widgetName.slice(1)}`,
         };
       } else {
         const Component = {
@@ -143,8 +149,6 @@ describe('DOM component', () => {
       expect(installedName).toBe(name);
       if (name === 'AisInstantSearchSsr') {
         expect(suitClass).toBe(`ais-InstantSearch`);
-      } else if (name === 'AisExperimentalDynamicWidgets') {
-        expect(suitClass).toBe(`ais-DynamicWidgets`);
       } else {
         expect(suitClass).toBe(`ais-${name.substr(3)}`);
       }
@@ -158,9 +162,7 @@ describe('installed widget', () => {
       ({ name }) => nonWidgetComponents.includes(name) === false
     )
   )('sets widgetType $name', ({ name, widget }) => {
-    if (name === 'AisExperimentalDynamicWidgets') {
-      expect(widget.$$widgetType).toBe('ais.dynamicWidgets');
-    } else if (name === 'AisExperimentalConfigureRelatedItems') {
+    if (name === 'AisExperimentalConfigureRelatedItems') {
       expect(widget.$$widgetType).toBe('ais.configureRelatedItems');
     } else {
       expect(widget.$$widgetType).toBe(

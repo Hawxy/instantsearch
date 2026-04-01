@@ -1,6 +1,6 @@
 import { h, Fragment } from 'vue';
 
-export const createElement = (tag, props, children) => {
+export const createElement = (tag: any, props: any, children?: any) => {
   if (!children) {
     return h(tag, props);
   }

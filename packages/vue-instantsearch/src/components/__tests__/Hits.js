@@ -3,11 +3,11 @@
  */
 
 import { mount } from '../../../test/utils';
-import { __setState } from '../../mixins/widget';
+import { __setState, useWidget } from '../../composables/useWidget';
 import Hits from '../Hits';
 import '../../../test/utils/sortedHtmlSerializer';
 
-jest.mock('../../mixins/widget');
+jest.mock('../../composables/useWidget');
 
 const defaultState = {
   items: [{ objectID: 'one' }, { objectID: 'two' }],
@@ -19,13 +19,14 @@ it('accepts a showBanner prop', () => {
     ...defaultState,
   });
 
-  const wrapper = mount(Hits, {
+  mount(Hits, {
     propsData: {
       showBanner: true,
     },
   });
 
-  expect(wrapper.vm.widgetParams.showBanner).toBe(true);
+  const widgetParams = useWidget.mock.calls[useWidget.mock.calls.length - 1][1].value;
+  expect(widgetParams.showBanner).toBe(true);
 });
 
 it('accepts an escapeHTML prop', () => {
@@ -33,13 +34,14 @@ it('accepts an escapeHTML prop', () => {
     ...defaultState,
   });
 
-  const wrapper = mount(Hits, {
+  mount(Hits, {
     propsData: {
       escapeHTML: true,
     },
   });
 
-  expect(wrapper.vm.widgetParams.escapeHTML).toBe(true);
+  const widgetParams = useWidget.mock.calls[useWidget.mock.calls.length - 1][1].value;
+  expect(widgetParams.escapeHTML).toBe(true);
 });
 
 it('exposes banner prop to the banner slot', () => {

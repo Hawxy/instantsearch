@@ -40,21 +40,21 @@ export function useInstantSearch(props: UseInstantSearchProps) {
       warn(
         'The `search-client` prop of `<ais-instant-search>` changed between renders, which may cause more search requests than necessary. If this is an unwanted behavior, please provide a stable reference: https://www.algolia.com/doc/api-reference/widgets/instantsearch/vue/#widget-param-search-client'
       );
-      instance.helper!.setClient(searchClient).search();
+      instance.helper?.setClient(searchClient).search();
     });
   }
 
   // Watch indexName
   if (props.indexName) {
     watch(props.indexName, (indexName) => {
-      instance.helper!.setIndex(indexName || '').search();
+      instance.helper?.setIndex(indexName || '').search();
     });
   }
 
   // Watch compositionID
   if (props.compositionID) {
     watch(props.compositionID, (compositionID) => {
-      instance.helper!.setIndex(compositionID || '').search();
+      instance.helper?.setIndex(compositionID || '').search();
     });
   }
 
@@ -149,7 +149,7 @@ export function useInstantSearch(props: UseInstantSearchProps) {
     (instance as any).__initialSearchResults = undefined;
   });
 
-  const suit = useSuit('InstantSearch');
+  const { suit } = useSuit('InstantSearch');
 
   return { suit };
 }

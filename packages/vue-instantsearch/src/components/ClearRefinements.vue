@@ -18,7 +18,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
 import { connectClearRefinements } from 'instantsearch.js/es/connectors/index.umd';
 

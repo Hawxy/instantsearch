@@ -5,11 +5,11 @@
 import { isProxy } from 'node:util/types';
 
 import { mount } from '../../../test/utils';
-import { __setState } from '../../mixins/widget';
+import { __setState } from '../../composables/useWidget';
 import Configure from '../Configure';
 import '../../../test/utils/sortedHtmlSerializer';
 
-jest.mock('../../mixins/widget');
+jest.mock('../../composables/useWidget');
 
 const defaultState = {
   widgetParams: {

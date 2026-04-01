@@ -38,7 +38,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue';
 import { connectHierarchicalMenu } from 'instantsearch.js/es/connectors/index.umd';
 

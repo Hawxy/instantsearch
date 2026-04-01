@@ -56,7 +56,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onUpdated } from 'vue';
 import { connectRange } from 'instantsearch.js/es/connectors/index.umd';
 

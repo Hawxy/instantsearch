@@ -8,47 +8,44 @@
   </div>
 </template>
 
-<script>
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+<script setup lang="ts">
+import { computed } from 'vue';
+
+import { useSuit } from '../composables/useSuit';
+import { useWidget } from '../composables/useWidget';
 // Uncomment and change here ⬇️
 // import { connectorName } from 'instantsearch.js/es/connectors/index.umd';
 
 /* eslint-disable @typescript-eslint/no-unused-vars,no-unused-vars */
 // Remove this part ⬇,️ only here for testing the template
 const connectorName =
-  (renderFn, unmountFn) =>
-  ({ someProp }) => ({
+  (renderFn: any, unmountFn: any) =>
+  ({ someProp }: any) => ({
     render: () => renderFn(),
   });
 /* eslint-enable */
 
-export default {
+defineOptions({
   name: 'AisTemplate', // ◀️ change this to the component name that will be exported
-  mixins: [
-    createSuitMixin({ name: 'Template' }), // ◀️ change this
-    createWidgetMixin({
-      connector: connectorName, // ◀️ change this to the right connectorName you imported
-    }),
-  ],
-  // ⬇️ Those are all the options of your widget (attribute, items ...)
-  // You don't need to write down the props that will be forwarded by the connector on render,
-  // They are directly accessible in the state in template
-  props: {
-    someProp: {
-      type: Array,
-      required: false,
-      default: () => [],
-    },
+});
+
+const { suit } = useSuit('Template'); // ◀️ change this
+
+// ⬇️ Those are all the options of your widget (attribute, items ...)
+const props = defineProps({
+  someProp: {
+    type: Array,
+    required: false,
+    default: () => [],
   },
-  computed: {
-    // ⬇️ Those are all the options of your widget (attribute, items ...)
-    // Same as props, just do the mapping
-    widgetParams() {
-      return {
-        someProp: this.someProp,
-      };
-    },
-  },
-};
+});
+
+const widgetParams = computed(() => ({
+  someProp: props.someProp,
+}));
+
+const { state } = useWidget({
+  connector: connectorName, // ◀️ change this to the right connectorName you imported
+  widgetParams,
+});
 </script>

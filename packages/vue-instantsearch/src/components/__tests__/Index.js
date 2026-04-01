@@ -3,13 +3,13 @@
  */
 
 import { mount } from '../../../test/utils';
-import { __setWidget } from '../../mixins/widget';
+import { __setWidget } from '../../composables/useWidget';
 import Index from '../Index';
-jest.mock('../../mixins/widget');
+jest.mock('../../composables/useWidget');
 import '../../../test/utils/sortedHtmlSerializer';
 
 beforeEach(() => {
-  jest.resetAllMocks();
+  jest.clearAllMocks();
 });
 
 it('passes props to widgetParams', () => {

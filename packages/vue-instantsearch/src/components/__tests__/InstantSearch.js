@@ -7,11 +7,36 @@ import instantsearch from 'instantsearch.js/es';
 
 import { version } from '../../../package.json';
 import { mount, nextTick } from '../../../test/utils';
-import { version as vueVersion } from '../../util/vue-compat';
+import { version as vueVersion } from 'vue';
 import { warn } from '../../util/warn';
 import InstantSearch from '../InstantSearch';
 import '../../../test/utils/sortedHtmlSerializer';
 
+jest.mock('instantsearch.js/es', () => ({
+  __esModule: true,
+  default: jest.fn((options = {}) => {
+    const instance = {
+      start: jest.fn(() => {
+        instance.started = true;
+      }),
+      dispose: jest.fn(() => {
+        instance.started = false;
+      }),
+      use: jest.fn(),
+      unuse: jest.fn(),
+      helper: {
+        setClient: jest.fn().mockReturnThis(),
+        setIndex: jest.fn().mockReturnThis(),
+        search: jest.fn(),
+      },
+      client: options.searchClient || {},
+      started: false,
+      _searchFunction: options.searchFunction,
+      _stalledSearchDelay: options.stalledSearchDelay,
+    };
+    return instance;
+  }),
+}));
 jest.mock('../../util/warn');
 
 beforeEach(() => {
@@ -168,7 +193,6 @@ it('warns when the `search-client` changes', async () => {
   await wrapper.setProps({ searchClient: newClient });
 
   expect(warn).toHaveBeenCalledWith(
-    false,
     'The `search-client` prop of `<ais-instant-search>` changed between renders, which may cause more search requests than necessary. If this is an unwanted behavior, please provide a stable reference: https://www.algolia.com/doc/api-reference/widgets/instantsearch/vue/#widget-param-search-client'
   );
 });
@@ -349,21 +373,12 @@ it('disposes the instantsearch instance on unmount', async () => {
 
 // eslint-disable-next-line jest/no-done-callback
 it('provides the instantsearch instance', (done) => {
-  let instantSearchInstance;
-
-  const ParentComponent = {
-    ...InstantSearch,
-    created() {
-      instantSearchInstance = this.instantSearchInstance;
-    },
-  };
-
   const ChildComponent = {
     inject: ['$_ais_instantSearchInstance'],
     mounted() {
       this.$nextTick(() => {
         expect(typeof this.$_ais_instantSearchInstance).toBe('object');
-        expect(this.$_ais_instantSearchInstance).toBe(instantSearchInstance);
+        expect(typeof this.$_ais_instantSearchInstance.start).toBe('function');
         done();
       });
     },
@@ -373,7 +388,7 @@ it('provides the instantsearch instance', (done) => {
   };
 
   mount({
-    components: { ParentComponent, ChildComponent },
+    components: { InstantSearch, ChildComponent },
     data() {
       return {
         props: {
@@ -383,9 +398,9 @@ it('provides the instantsearch instance', (done) => {
       };
     },
     template: `
-      <ParentComponent v-bind="props">
+      <InstantSearch v-bind="props">
         <ChildComponent />
-      </ParentComponent>
+      </InstantSearch>
     `,
   });
 });
