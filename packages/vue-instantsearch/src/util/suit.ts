@@ -7,12 +7,16 @@
  *
  * @returns {string} the composed class name
  */
-export default function suit(widgetName, element, modifier) {
+export default function suit(
+  widgetName: string,
+  element?: string,
+  modifier?: string
+) {
   if (!widgetName) {
     throw new Error('You need to provide `widgetName` in your data');
   }
 
-  const elements = [`ais-${widgetName}`];
+  const elements: string[] = [`ais-${widgetName}`];
 
   if (element) {
     elements.push(`-${element}`);

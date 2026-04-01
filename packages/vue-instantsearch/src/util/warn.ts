@@ -1,6 +1,6 @@
-const cache = new Set();
+const cache = new Set<string>();
 
-export function warn(message) {
+export function warn(message: string) {
   if (cache.has(message)) return;
   cache.add(message);
   // eslint-disable-next-line no-console

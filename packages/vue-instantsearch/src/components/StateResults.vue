@@ -17,7 +17,7 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useSuit } from '../composables/useSuit';
 import { useWidget } from '../composables/useWidget';
-import { _objectSpread } from '../util/polyfills';
+
 
 defineOptions({ name: 'AisStateResults' });
 
@@ -85,6 +85,6 @@ watch(
 const stateResults = computed(() => {
   if (!state.value) return null;
   const { results, state: helperState, status, error } = state.value;
-  return _objectSpread({}, results, { results, state: helperState, status, error });
+  return Object.assign({}, results, { results, state: helperState, status, error });
 });
 </script>

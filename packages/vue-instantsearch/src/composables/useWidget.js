@@ -1,5 +1,4 @@
 import { ref, inject, watch, onBeforeUnmount, computed } from 'vue';
-import { _objectSpread } from '../util/polyfills';
 import { warn } from '../util/warn';
 
 export function useWidget(
@@ -32,7 +31,7 @@ export function useWidget(
 
   if (typeof connector === 'function') {
     factory = connector(updateState, () => {});
-    widget = _objectSpread(
+    widget = Object.assign(
       factory(widgetParams ? widgetParams.value : {}),
       additionalProperties
     );
@@ -68,7 +67,7 @@ Read more on using connectors: https://alg.li/vue-custom`
         if (!factory) return;
         state.value = null;
         getParentIndex().removeWidgets([widget]);
-        widget = _objectSpread(
+        widget = Object.assign(
           factory(nextWidgetParams),
           additionalProperties
         );

@@ -4,7 +4,7 @@
  */
 
 /** Used to map HTML entities to characters. */
-const htmlUnescapes = {
+const htmlUnescapes: Record<string, string> = {
   '&amp;': '&',
   '&lt;': '<',
   '&gt;': '>',
@@ -35,7 +35,7 @@ const reHasEscapedHtml = RegExp(reEscapedHtml.source);
  * _.unescape('fred, barney, &amp; pebbles');
  * // => 'fred, barney, & pebbles'
  */
-export function unescape(string) {
+export function unescape(string: string) {
   return string && reHasEscapedHtml.test(string)
     ? string.replace(reEscapedHtml, (character) => htmlUnescapes[character])
     : string;

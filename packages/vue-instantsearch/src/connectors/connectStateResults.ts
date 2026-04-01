@@ -1,9 +1,7 @@
-import { _objectSpread } from '../util/polyfills';
-
 const connectStateResults =
-  (renderFn, unmountFn = () => {}) =>
+  (renderFn: Function, unmountFn = () => {}) =>
   (widgetParams = {}) => ({
-    init({ instantSearchInstance }) {
+    init({ instantSearchInstance }: { instantSearchInstance: unknown }) {
       renderFn(
         {
           state: undefined,
@@ -15,10 +13,9 @@ const connectStateResults =
       );
     },
 
-    render({ results, instantSearchInstance, state }) {
-      const resultsCopy = _objectSpread({}, results);
-
-      const stateCopy = _objectSpread({}, state);
+    render({ results, instantSearchInstance, state }: Record<string, unknown>) {
+      const resultsCopy = { ...results };
+      const stateCopy = { ...state };
 
       renderFn(
         {

@@ -1,6 +1,7 @@
 // copied from React InstantSearch
 import { getPropertyByPath } from 'instantsearch.js/es/lib/utils';
 
+import type { HighlightPart } from '../types';
 import { unescape } from '../util/unescape';
 
 const TAG_PLACEHOLDER = {
@@ -17,11 +18,19 @@ const TAG_PLACEHOLDER = {
  * @param {string} highlightedValue - highlighted attribute as returned by Algolia highlight feature
  * @return {object[]} - An array of {value: string, isHighlighted: boolean}.
  */
-function parseHighlightedAttribute({ preTag, postTag, highlightedValue = '' }) {
+function parseHighlightedAttribute({
+  preTag,
+  postTag,
+  highlightedValue = '',
+}: {
+  preTag: string;
+  postTag: string;
+  highlightedValue?: string;
+}): HighlightPart[] {
   const splitByPreTag = highlightedValue.split(preTag);
   const firstValue = splitByPreTag.shift();
-  const elements =
-    firstValue === '' ? [] : [{ value: firstValue, isHighlighted: false }];
+  const elements: HighlightPart[] =
+    !firstValue ? [] : [{ value: firstValue, isHighlighted: false }];
 
   if (postTag === preTag) {
     let isHighlighted = true;
@@ -75,18 +84,24 @@ export function parseAlgoliaHit({
   highlightProperty,
   attribute,
   hit,
-}) {
+}: {
+  preTag?: string;
+  postTag?: string;
+  highlightProperty: string;
+  attribute: string;
+  hit: Record<string, any>;
+}): HighlightPart[] | HighlightPart[][] {
   if (!hit) throw new Error('`hit`, the matching record, must be provided');
 
   const highlightObject =
     getPropertyByPath(hit[highlightProperty], attribute) || {};
 
   if (Array.isArray(highlightObject)) {
-    return highlightObject.map((item) =>
+    return highlightObject.map((item: any) =>
       parseHighlightedAttribute({
         preTag,
         postTag,
-        highlightedValue: unescape(item.value),
+        highlightedValue: unescape(item.value || ''),
       })
     );
   }
@@ -94,6 +109,6 @@ export function parseAlgoliaHit({
   return parseHighlightedAttribute({
     preTag,
     postTag,
-    highlightedValue: unescape(highlightObject.value),
+    highlightedValue: unescape(highlightObject.value || ''),
   });
 }

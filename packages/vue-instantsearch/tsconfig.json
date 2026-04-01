@@ -4,7 +4,15 @@
     "jsx": "preserve",
     "jsxImportSource": "vue",
     "noEmit": true,
-    "allowJs": true
+    "allowJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "instantsearch.js": ["../instantsearch.js/src"],
+      "instantsearch.js/*": ["../instantsearch.js/*"],
+      "instantsearch.js/es/*": ["../instantsearch.js/src/*"],
+      "algoliasearch-helper": ["../algoliasearch-helper"],
+      "algoliasearch-helper/*": ["../algoliasearch-helper/*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["src/**/__tests__/**/*", "dist/**/*"]
