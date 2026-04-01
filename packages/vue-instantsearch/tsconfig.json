@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "noEmit": true,
+    "allowJs": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["src/**/__tests__/**/*", "dist/**/*"]
+}

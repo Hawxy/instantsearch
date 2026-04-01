@@ -42,7 +42,7 @@ const config = {
   ],
   transform: {
     '^.+\\.(j|t)sx?$': 'babel-jest',
-    '^.+\\.vue$': '@vue/vue2-jest',
+    '^.+\\.vue$': '@vue/vue3-jest',
   },
   moduleFileExtensions: ['tsx', 'ts', 'js', 'vue'],
   moduleNameMapper: {
