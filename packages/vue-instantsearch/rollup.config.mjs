@@ -27,8 +27,6 @@ const createFile = (fileName, content) => ({
   },
 });
 
-const isWatching = process.env.ROLLUP_WATCH;
-
 const external = id =>
   [
     'algoliasearch-helper',
@@ -52,28 +50,6 @@ const basePlugins = [
   createReplacePlugin({ mode: 'production' }),
   createStripJsxPragmaPlugin(),
 ];
-
-const cjs = {
-  input: 'src/instantsearch.js',
-  external,
-  output: {
-    sourcemap: false,
-    file: 'dist/cjs/index.js',
-    format: 'cjs',
-    exports: 'named',
-  },
-  plugins: [
-    ...basePlugins,
-    createReplacePlugin({
-      mode: 'production',
-      additional: {
-        'instantsearch.js/es': 'instantsearch.js/cjs',
-      },
-    }),
-    createTerserPlugin({ sourceMap: false }),
-    createPackageJsonPlugin({ type: 'commonjs', sideEffects: true }),
-  ],
-};
 
 const esm = {
   input: 'src/instantsearch.js',
@@ -101,30 +77,4 @@ export * from './src/instantsearch.js';`
   ],
 };
 
-const umd = {
-  input: 'src/instantsearch.umd.js',
-  external: ['vue'],
-  output: {
-    sourcemap: false,
-    file: 'dist/umd/index.js',
-    format: 'umd',
-    name: 'VueInstantSearch',
-    exports: 'named',
-    globals: {
-      vue: 'Vue',
-    },
-  },
-  onwarn(warning, warn) {
-    if (warning.code === 'CIRCULAR_DEPENDENCY') {
-      throw new Error(warning.message);
-    }
-    warn(warning);
-  },
-  plugins: [
-    ...basePlugins,
-    createResolvePlugin(),
-    createTerserPlugin({ sourceMap: false }),
-  ],
-};
-
-export default isWatching ? [esm] : [cjs, esm, umd];
+export default [esm];

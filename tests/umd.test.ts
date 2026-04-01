@@ -31,20 +31,7 @@ describe('UMD bundle', () => {
         'https://cdn.jsdelivr.net/npm/react@17/umd/react.production.min.js',
       ],
     },
-    {
-      name: 'vue-instantsearch',
-      bundle: 'vue2/umd/index.js',
-      globalName: 'VueInstantSearch',
-      dependencies: ['https://cdn.jsdelivr.net/npm/vue@2/dist/vue.min.js'],
-    },
-    {
-      name: 'vue-instantsearch',
-      bundle: 'vue3/umd/index.js',
-      globalName: 'VueInstantSearch',
-      dependencies: [
-        'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js',
-      ],
-    },
+
   ])('$bundle', ({ name, bundle, globalName, dependencies }) => {
     test('loads successfully', async () => {
       const { window, error } = await createEnvironment(
