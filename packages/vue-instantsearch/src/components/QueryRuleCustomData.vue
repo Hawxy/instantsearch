@@ -10,38 +10,36 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue';
 import { connectQueryRules } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
 
-export default {
-  name: 'AisQueryRuleCustomData',
-  mixins: [
-    createSuitMixin({ name: 'QueryRuleCustomData' }),
-    createWidgetMixin(
-      {
-        connector: connectQueryRules,
-      },
-      {
-        $$widgetType: 'ais.queryRuleCustomData',
-      }
-    ),
-  ],
-  props: {
-    transformItems: {
-      type: Function,
-      required: false,
-      default: undefined,
-    },
+defineOptions({ name: 'AisQueryRuleCustomData' });
+
+const props = defineProps({
+  transformItems: {
+    type: Function,
+    required: false,
+    default: undefined,
   },
-  computed: {
-    widgetParams() {
-      return {
-        transformItems: this.transformItems,
-      };
-    },
+  classNames: {
+    type: Object,
+    default: undefined,
   },
-};
+});
+
+const widgetParams = computed(() => ({
+  transformItems: props.transformItems,
+}));
+
+const { state } = useWidget(
+  { connector: connectQueryRules },
+  widgetParams,
+  { $$widgetType: 'ais.queryRuleCustomData' }
+);
+
+const { suit } = useSuit('QueryRuleCustomData', computed(() => props.classNames));
 </script>

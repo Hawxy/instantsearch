@@ -69,44 +69,42 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue';
 import { connectRatingMenu } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createPanelConsumerMixin } from '../mixins/panel';
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
+import { usePanelConsumer } from '../composables/usePanel';
 
-export default {
-  name: 'AisRatingMenu',
-  mixins: [
-    createSuitMixin({ name: 'RatingMenu' }),
-    createWidgetMixin(
-      {
-        connector: connectRatingMenu,
-      },
-      {
-        $$widgetType: 'ais.ratingMenu',
-      }
-    ),
-    createPanelConsumerMixin(),
-  ],
-  props: {
-    attribute: {
-      type: String,
-      required: true,
-    },
-    max: {
-      type: Number,
-      default: undefined,
-    },
+defineOptions({ name: 'AisRatingMenu' });
+
+const props = defineProps({
+  attribute: {
+    type: String,
+    required: true,
   },
-  computed: {
-    widgetParams() {
-      return {
-        attribute: this.attribute,
-        max: this.max,
-      };
-    },
+  max: {
+    type: Number,
+    default: undefined,
   },
-};
+  classNames: {
+    type: Object,
+    default: undefined,
+  },
+});
+
+const widgetParams = computed(() => ({
+  attribute: props.attribute,
+  max: props.max,
+}));
+
+const { state } = useWidget(
+  { connector: connectRatingMenu },
+  widgetParams,
+  { $$widgetType: 'ais.ratingMenu' }
+);
+
+usePanelConsumer();
+const { suit } = useSuit('RatingMenu', computed(() => props.classNames));
 </script>

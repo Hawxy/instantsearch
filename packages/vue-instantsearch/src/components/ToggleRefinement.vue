@@ -28,55 +28,53 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue';
 import { connectToggleRefinement } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createPanelConsumerMixin } from '../mixins/panel';
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
+import { usePanelConsumer } from '../composables/usePanel';
 
-export default {
-  name: 'AisToggleRefinement',
-  mixins: [
-    createSuitMixin({ name: 'ToggleRefinement' }),
-    createWidgetMixin(
-      {
-        connector: connectToggleRefinement,
-      },
-      {
-        $$widgetType: 'ais.toggleRefinement',
-      }
-    ),
-    createPanelConsumerMixin(),
-  ],
-  props: {
-    attribute: {
-      type: String,
-      required: true,
-    },
-    on: {
-      type: [String, Number, Boolean, Array],
-      required: false,
-      default: true,
-    },
-    off: {
-      type: [String, Number, Boolean, Array],
-      required: false,
-      default: undefined,
-    },
-    label: {
-      type: String,
-      default: undefined,
-    },
+defineOptions({ name: 'AisToggleRefinement' });
+
+const props = defineProps({
+  attribute: {
+    type: String,
+    required: true,
   },
-  computed: {
-    widgetParams() {
-      return {
-        attribute: this.attribute,
-        on: this.on,
-        off: this.off,
-      };
-    },
+  on: {
+    type: [String, Number, Boolean, Array],
+    required: false,
+    default: true,
   },
-};
+  off: {
+    type: [String, Number, Boolean, Array],
+    required: false,
+    default: undefined,
+  },
+  label: {
+    type: String,
+    default: undefined,
+  },
+  classNames: {
+    type: Object,
+    default: undefined,
+  },
+});
+
+const widgetParams = computed(() => ({
+  attribute: props.attribute,
+  on: props.on,
+  off: props.off,
+}));
+
+const { state } = useWidget(
+  { connector: connectToggleRefinement },
+  widgetParams,
+  { $$widgetType: 'ais.toggleRefinement' }
+);
+
+usePanelConsumer();
+const { suit } = useSuit('ToggleRefinement', computed(() => props.classNames));
 </script>

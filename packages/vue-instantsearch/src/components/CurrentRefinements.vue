@@ -50,64 +50,61 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue';
 import { connectCurrentRefinements } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createPanelConsumerMixin } from '../mixins/panel';
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
+import { usePanelConsumer } from '../composables/usePanel';
 
-export default {
-  name: 'AisCurrentRefinements',
-  mixins: [
-    createSuitMixin({ name: 'CurrentRefinements' }),
-    createWidgetMixin(
-      {
-        connector: connectCurrentRefinements,
-      },
-      {
-        $$widgetType: 'ais.currentRefinements',
-      }
-    ),
-    createPanelConsumerMixin(),
-  ],
-  props: {
-    includedAttributes: {
-      type: Array,
-      default: undefined,
-    },
-    excludedAttributes: {
-      type: Array,
-      default: undefined,
-    },
-    transformItems: {
-      type: Function,
-      default: undefined,
-    },
+defineOptions({ name: 'AisCurrentRefinements' });
+
+const props = defineProps({
+  includedAttributes: {
+    type: Array,
+    default: undefined,
   },
-  computed: {
-    noRefinement() {
-      return this.state && this.state.items.length === 0;
-    },
-    widgetParams() {
-      return {
-        includedAttributes: this.includedAttributes,
-        excludedAttributes: this.excludedAttributes,
-        transformItems: this.transformItems,
-      };
-    },
+  excludedAttributes: {
+    type: Array,
+    default: undefined,
   },
-  methods: {
-    createItemKey({ attribute, value, type, operator }) {
-      return [attribute, type, value, operator].join(':');
-    },
-    capitalize(value) {
-      if (!value) return '';
-      return (
-        value.toString().charAt(0).toLocaleUpperCase() +
-        value.toString().slice(1)
-      );
-    },
+  transformItems: {
+    type: Function,
+    default: undefined,
   },
-};
+  classNames: {
+    type: Object,
+    default: undefined,
+  },
+});
+
+const widgetParams = computed(() => ({
+  includedAttributes: props.includedAttributes,
+  excludedAttributes: props.excludedAttributes,
+  transformItems: props.transformItems,
+}));
+
+const { state } = useWidget(
+  { connector: connectCurrentRefinements },
+  widgetParams,
+  { $$widgetType: 'ais.currentRefinements' }
+);
+
+usePanelConsumer();
+const { suit } = useSuit('CurrentRefinements', computed(() => props.classNames));
+
+const noRefinement = computed(() => state.value && state.value.items.length === 0);
+
+function createItemKey({ attribute, value, type, operator }) {
+  return [attribute, type, value, operator].join(':');
+}
+
+function capitalize(value) {
+  if (!value) return '';
+  return (
+    value.toString().charAt(0).toLocaleUpperCase() +
+    value.toString().slice(1)
+  );
+}
 </script>

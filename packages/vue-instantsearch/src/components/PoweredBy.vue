@@ -25,30 +25,33 @@
   </div>
 </template>
 
-<script>
-import { createSuitMixin } from '../mixins/suit';
+<script setup>
+import { computed } from 'vue';
 
-export default {
-  name: 'AisPoweredBy',
-  mixins: [createSuitMixin({ name: 'PoweredBy' })],
-  props: {
-    theme: {
-      default: 'light',
-      validator(value) {
-        return ['light', 'dark'].indexOf(value) !== -1;
-      },
+import { useSuit } from '../composables/useSuit';
+
+defineOptions({ name: 'AisPoweredBy' });
+
+const props = defineProps({
+  theme: {
+    default: 'light',
+    validator(value) {
+      return ['light', 'dark'].indexOf(value) !== -1;
     },
   },
-  computed: {
-    algoliaUrl() {
-      return (
-        'https://www.algolia.com/?' +
-        'utm_source=vue-instantsearch&' +
-        'utm_medium=website&' +
-        `utm_content=${location ? location.hostname : ''}&` +
-        'utm_campaign=poweredby'
-      );
-    },
+  classNames: {
+    type: Object,
+    default: undefined,
   },
-};
+});
+
+const { suit } = useSuit('PoweredBy', computed(() => props.classNames));
+
+const algoliaUrl = computed(() => (
+  'https://www.algolia.com/?' +
+  'utm_source=vue-instantsearch&' +
+  'utm_medium=website&' +
+  `utm_content=${typeof location !== 'undefined' ? location.hostname : ''}&` +
+  'utm_campaign=poweredby'
+));
 </script>

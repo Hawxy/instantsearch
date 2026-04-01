@@ -19,38 +19,36 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue';
 import { connectAutocomplete } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
 
-export default {
-  name: 'AisAutocomplete',
-  mixins: [
-    createWidgetMixin(
-      {
-        connector: connectAutocomplete,
-      },
-      {
-        $$widgetType: 'ais.autocomplete',
-      }
-    ),
-    createSuitMixin({ name: 'Autocomplete' }),
-  ],
-  props: {
-    escapeHTML: {
-      type: Boolean,
-      required: false,
-      default: true,
-    },
+defineOptions({ name: 'AisAutocomplete' });
+
+const props = defineProps({
+  escapeHTML: {
+    type: Boolean,
+    required: false,
+    default: true,
   },
-  computed: {
-    widgetParams() {
-      return {
-        escapeHTML: this.escapeHTML,
-      };
-    },
+  classNames: {
+    type: Object,
+    default: undefined,
   },
-};
+});
+
+const widgetParams = computed(() => ({
+  escapeHTML: props.escapeHTML,
+}));
+
+const { state } = useWidget(
+  { connector: connectAutocomplete },
+  widgetParams,
+  { $$widgetType: 'ais.autocomplete' }
+);
+
+const { suit } = useSuit('Autocomplete', computed(() => props.classNames));
 </script>

@@ -15,33 +15,37 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue';
 import { connectRelevantSort } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
 
-export default {
-  name: 'AisRelevantSort',
-  mixins: [
-    createSuitMixin({ name: 'RelevantSort' }),
-    createWidgetMixin(
-      {
-        connector: connectRelevantSort,
-      },
-      {
-        $$widgetType: 'ais.relevantSort',
-      }
-    ),
-  ],
-  methods: {
-    refine() {
-      if (this.state.isRelevantSorted) {
-        this.state.refine(0);
-      } else {
-        this.state.refine(undefined);
-      }
-    },
+defineOptions({ name: 'AisRelevantSort' });
+
+const props = defineProps({
+  classNames: {
+    type: Object,
+    default: undefined,
   },
-};
+});
+
+const widgetParams = computed(() => ({}));
+
+const { state } = useWidget(
+  { connector: connectRelevantSort },
+  widgetParams,
+  { $$widgetType: 'ais.relevantSort' }
+);
+
+const { suit } = useSuit('RelevantSort', computed(() => props.classNames));
+
+function refine() {
+  if (state.value.isRelevantSorted) {
+    state.value.refine(0);
+  } else {
+    state.value.refine(undefined);
+  }
+}
 </script>

@@ -18,52 +18,49 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue';
 import { connectClearRefinements } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createPanelConsumerMixin } from '../mixins/panel';
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
+import { usePanelConsumer } from '../composables/usePanel';
 
-export default {
-  name: 'AisClearRefinements',
-  mixins: [
-    createWidgetMixin(
-      {
-        connector: connectClearRefinements,
-      },
-      {
-        $$widgetType: 'ais.clearRefinements',
-      }
-    ),
-    createPanelConsumerMixin(),
-    createSuitMixin({ name: 'ClearRefinements' }),
-  ],
-  props: {
-    excludedAttributes: {
-      type: Array,
-      default: undefined,
-    },
-    includedAttributes: {
-      type: Array,
-      default: undefined,
-    },
-    transformItems: {
-      type: Function,
-      default: undefined,
-    },
+defineOptions({ name: 'AisClearRefinements' });
+
+const props = defineProps({
+  excludedAttributes: {
+    type: Array,
+    default: undefined,
   },
-  computed: {
-    widgetParams() {
-      return {
-        includedAttributes: this.includedAttributes,
-        excludedAttributes: this.excludedAttributes,
-        transformItems: this.transformItems,
-      };
-    },
-    canRefine() {
-      return this.state.hasRefinements;
-    },
+  includedAttributes: {
+    type: Array,
+    default: undefined,
   },
-};
+  transformItems: {
+    type: Function,
+    default: undefined,
+  },
+  classNames: {
+    type: Object,
+    default: undefined,
+  },
+});
+
+const widgetParams = computed(() => ({
+  includedAttributes: props.includedAttributes,
+  excludedAttributes: props.excludedAttributes,
+  transformItems: props.transformItems,
+}));
+
+const { state } = useWidget(
+  { connector: connectClearRefinements },
+  widgetParams,
+  { $$widgetType: 'ais.clearRefinements' }
+);
+
+usePanelConsumer();
+const { suit } = useSuit('ClearRefinements', computed(() => props.classNames));
+
+const canRefine = computed(() => state.value && state.value.hasRefinements);
 </script>

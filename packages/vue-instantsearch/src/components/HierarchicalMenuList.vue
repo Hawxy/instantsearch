@@ -36,30 +36,29 @@
   </ul>
 </template>
 
-<script>
-export default {
-  name: 'HierarchicalMenuList',
-  props: {
-    items: {
-      type: Array,
-      required: true,
-    },
-    level: {
-      type: Number,
-      required: true,
-    },
-    refine: {
-      type: Function,
-      required: true,
-    },
-    createURL: {
-      type: Function,
-      required: true,
-    },
-    suit: {
-      type: Function,
-      required: true,
-    },
+<script setup>
+defineOptions({ name: 'HierarchicalMenuList' });
+
+defineProps({
+  items: {
+    type: Array,
+    required: true,
   },
-};
+  level: {
+    type: Number,
+    required: true,
+  },
+  refine: {
+    type: Function,
+    required: true,
+  },
+  createURL: {
+    type: Function,
+    required: true,
+  },
+  suit: {
+    type: Function,
+    required: true,
+  },
+});
 </script>

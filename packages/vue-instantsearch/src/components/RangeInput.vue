@@ -56,95 +56,86 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onUpdated } from 'vue';
 import { connectRange } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createPanelConsumerMixin } from '../mixins/panel';
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
+import { usePanelConsumer } from '../composables/usePanel';
 
-export default {
-  name: 'AisRangeInput',
-  mixins: [
-    createSuitMixin({ name: 'RangeInput' }),
-    createWidgetMixin(
-      {
-        connector: connectRange,
-      },
-      {
-        $$widgetType: 'ais.rangeInput',
-      }
-    ),
-    createPanelConsumerMixin(),
-  ],
-  props: {
-    attribute: {
-      type: String,
-      required: true,
-    },
-    min: {
-      type: Number,
-      required: false,
-      default: undefined,
-    },
-    max: {
-      type: Number,
-      required: false,
-      default: undefined,
-    },
-    precision: {
-      type: Number,
-      required: false,
-      default: 0,
-    },
-  },
-  data() {
-    return {
-      minInput: undefined,
-      maxInput: undefined,
-    };
-  },
-  updated() {
-    this.minInput = undefined;
-    this.maxInput = undefined;
-  },
-  computed: {
-    widgetParams() {
-      return {
-        attribute: this.attribute,
-        min: this.min,
-        max: this.max,
-        precision: this.precision,
-      };
-    },
-    step() {
-      return 1 / Math.pow(10, this.precision);
-    },
-    values() {
-      const [minValue, maxValue] = this.state.start;
-      const { min: minRange, max: maxRange } = this.state.range;
+defineOptions({ name: 'AisRangeInput' });
 
-      return {
-        min:
-          minValue !== -Infinity && minValue !== minRange
-            ? minValue
-            : undefined,
-        max:
-          maxValue !== Infinity && maxValue !== maxRange ? maxValue : undefined,
-      };
-    },
+const props = defineProps({
+  attribute: {
+    type: String,
+    required: true,
   },
-  methods: {
-    pick(first, second) {
-      if (first !== null && first !== undefined) {
-        return first;
-      } else {
-        return second;
-      }
-    },
-    refine({ min, max }) {
-      this.state.refine([min, max]);
-    },
+  min: {
+    type: Number,
+    required: false,
+    default: undefined,
   },
-};
+  max: {
+    type: Number,
+    required: false,
+    default: undefined,
+  },
+  precision: {
+    type: Number,
+    required: false,
+    default: 0,
+  },
+  classNames: {
+    type: Object,
+    default: undefined,
+  },
+});
+
+const widgetParams = computed(() => ({
+  attribute: props.attribute,
+  min: props.min,
+  max: props.max,
+  precision: props.precision,
+}));
+
+const { state } = useWidget(
+  { connector: connectRange },
+  widgetParams,
+  { $$widgetType: 'ais.rangeInput' }
+);
+
+usePanelConsumer();
+const { suit } = useSuit('RangeInput', computed(() => props.classNames));
+
+const minInput = ref(undefined);
+const maxInput = ref(undefined);
+
+onUpdated(() => {
+  minInput.value = undefined;
+  maxInput.value = undefined;
+});
+
+const step = computed(() => 1 / Math.pow(10, props.precision));
+
+const values = computed(() => {
+  const [minValue, maxValue] = state.value.start;
+  const { min: minRange, max: maxRange } = state.value.range;
+  return {
+    min: minValue !== -Infinity && minValue !== minRange ? minValue : undefined,
+    max: maxValue !== Infinity && maxValue !== maxRange ? maxValue : undefined,
+  };
+});
+
+function pick(first, second) {
+  if (first !== null && first !== undefined) {
+    return first;
+  } else {
+    return second;
+  }
+}
+
+function refine({ min, max }) {
+  state.value.refine([min, max]);
+}
 </script>

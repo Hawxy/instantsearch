@@ -33,49 +33,47 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue';
 import { connectNumericMenu } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createPanelConsumerMixin } from '../mixins/panel';
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
+import { usePanelConsumer } from '../composables/usePanel';
 
-export default {
-  name: 'AisNumericMenu',
-  mixins: [
-    createWidgetMixin(
-      {
-        connector: connectNumericMenu,
-      },
-      {
-        $$widgetType: 'ais.numericMenu',
-      }
-    ),
-    createSuitMixin({ name: 'NumericMenu' }),
-    createPanelConsumerMixin(),
-  ],
-  props: {
-    attribute: {
-      type: String,
-      required: true,
-    },
-    items: {
-      type: Array,
-      required: true,
-    },
-    transformItems: {
-      type: Function,
-      default: undefined,
-    },
+defineOptions({ name: 'AisNumericMenu' });
+
+const props = defineProps({
+  attribute: {
+    type: String,
+    required: true,
   },
-  computed: {
-    widgetParams() {
-      return {
-        attribute: this.attribute,
-        transformItems: this.transformItems,
-        items: this.items,
-      };
-    },
+  items: {
+    type: Array,
+    required: true,
   },
-};
+  transformItems: {
+    type: Function,
+    default: undefined,
+  },
+  classNames: {
+    type: Object,
+    default: undefined,
+  },
+});
+
+const widgetParams = computed(() => ({
+  attribute: props.attribute,
+  transformItems: props.transformItems,
+  items: props.items,
+}));
+
+const { state } = useWidget(
+  { connector: connectNumericMenu },
+  widgetParams,
+  { $$widgetType: 'ais.numericMenu' }
+);
+
+usePanelConsumer();
+const { suit } = useSuit('NumericMenu', computed(() => props.classNames));
 </script>

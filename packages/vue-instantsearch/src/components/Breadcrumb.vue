@@ -54,59 +54,56 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed, toRefs } from 'vue';
 import { connectBreadcrumb } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createPanelConsumerMixin } from '../mixins/panel';
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
+import { usePanelConsumer } from '../composables/usePanel';
 
-export default {
-  name: 'AisBreadcrumb',
-  mixins: [
-    createWidgetMixin(
-      {
-        connector: connectBreadcrumb,
-      },
-      {
-        $$widgetType: 'ais.breadcrumb',
-      }
-    ),
-    createPanelConsumerMixin(),
-    createSuitMixin({ name: 'Breadcrumb' }),
-  ],
-  props: {
-    attributes: {
-      type: Array,
-      required: true,
-    },
-    separator: {
-      type: String,
-      default: undefined,
-    },
-    rootPath: {
-      type: String,
-      default: undefined,
-    },
-    transformItems: {
-      type: Function,
-      default: undefined,
-    },
+defineOptions({ name: 'AisBreadcrumb' });
+
+const props = defineProps({
+  attributes: {
+    type: Array,
+    required: true,
   },
-  computed: {
-    widgetParams() {
-      return {
-        attributes: this.attributes,
-        separator: this.separator,
-        rootPath: this.rootPath,
-        transformItems: this.transformItems,
-      };
-    },
+  separator: {
+    type: String,
+    default: undefined,
   },
-  methods: {
-    isLastItem(index) {
-      return this.state.items.length - 1 === index;
-    },
+  rootPath: {
+    type: String,
+    default: undefined,
   },
-};
+  transformItems: {
+    type: Function,
+    default: undefined,
+  },
+  classNames: {
+    type: Object,
+    default: undefined,
+  },
+});
+
+const widgetParams = computed(() => ({
+  attributes: props.attributes,
+  separator: props.separator,
+  rootPath: props.rootPath,
+  transformItems: props.transformItems,
+}));
+
+const { state } = useWidget(
+  { connector: connectBreadcrumb },
+  widgetParams,
+  { $$widgetType: 'ais.breadcrumb' }
+);
+
+usePanelConsumer();
+const { suit } = useSuit('Breadcrumb', computed(() => props.classNames));
+
+function isLastItem(index) {
+  return state.value.items.length - 1 === index;
+}
 </script>

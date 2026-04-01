@@ -164,75 +164,72 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue';
 import { connectPagination } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createPanelConsumerMixin } from '../mixins/panel';
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
+import { usePanelConsumer } from '../composables/usePanel';
 
-export default {
-  name: 'AisPagination',
-  mixins: [
-    createSuitMixin({ name: 'Pagination' }),
-    createWidgetMixin(
-      {
-        connector: connectPagination,
-      },
-      {
-        $$widgetType: 'ais.pagination',
-      }
-    ),
-    createPanelConsumerMixin(),
-  ],
-  props: {
-    padding: {
-      type: Number,
-      default: undefined,
-      validator(value) {
-        return value > 0;
-      },
-    },
-    totalPages: {
-      type: Number,
-      default: undefined,
-      validator(value) {
-        return value > 0;
-      },
-    },
-    showFirst: {
-      type: Boolean,
-      default: true,
-    },
-    showLast: {
-      type: Boolean,
-      default: true,
-    },
-    showNext: {
-      type: Boolean,
-      default: true,
-    },
-    showPrevious: {
-      type: Boolean,
-      default: true,
+defineOptions({ name: 'AisPagination' });
+
+const props = defineProps({
+  padding: {
+    type: Number,
+    default: undefined,
+    validator(value) {
+      return value > 0;
     },
   },
-  computed: {
-    widgetParams() {
-      return {
-        padding: this.padding,
-        totalPages: this.totalPages,
-      };
+  totalPages: {
+    type: Number,
+    default: undefined,
+    validator(value) {
+      return value > 0;
     },
   },
-  emits: ['page-change'],
-  methods: {
-    refine(page) {
-      const p = Math.min(Math.max(page, 0), this.state.nbPages - 1);
-      this.state.refine(p);
-      // TODO: do this in a general way
-      this.$emit('page-change', p);
-    },
+  showFirst: {
+    type: Boolean,
+    default: true,
   },
-};
+  showLast: {
+    type: Boolean,
+    default: true,
+  },
+  showNext: {
+    type: Boolean,
+    default: true,
+  },
+  showPrevious: {
+    type: Boolean,
+    default: true,
+  },
+  classNames: {
+    type: Object,
+    default: undefined,
+  },
+});
+
+const emit = defineEmits(['page-change']);
+
+const widgetParams = computed(() => ({
+  padding: props.padding,
+  totalPages: props.totalPages,
+}));
+
+const { state } = useWidget(
+  { connector: connectPagination },
+  widgetParams,
+  { $$widgetType: 'ais.pagination' }
+);
+
+usePanelConsumer();
+const { suit } = useSuit('Pagination', computed(() => props.classNames));
+
+function refine(page) {
+  const p = Math.min(Math.max(page, 0), state.value.nbPages - 1);
+  state.value.refine(p);
+  emit('page-change', p);
+}
 </script>

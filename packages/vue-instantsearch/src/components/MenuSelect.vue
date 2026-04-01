@@ -33,59 +33,58 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue';
 import { connectMenu } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createPanelConsumerMixin } from '../mixins/panel';
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
+import { usePanelConsumer } from '../composables/usePanel';
 
-export default {
-  name: 'AisMenuSelect',
-  mixins: [
-    createSuitMixin({ name: 'MenuSelect' }),
-    createWidgetMixin(
-      { connector: connectMenu },
-      {
-        $$widgetType: 'ais.menuSelect',
-      }
-    ),
-    createPanelConsumerMixin(),
-  ],
-  props: {
-    attribute: {
-      type: String,
-      required: true,
-    },
-    limit: {
-      type: Number,
-      default: 10,
-    },
-    sortBy: {
-      type: [Array, Function],
-      default: undefined,
-    },
-    transformItems: {
-      type: Function,
-      default(items) {
-        return items;
-      },
+defineOptions({ name: 'AisMenuSelect' });
+
+const props = defineProps({
+  attribute: {
+    type: String,
+    required: true,
+  },
+  limit: {
+    type: Number,
+    default: 10,
+  },
+  sortBy: {
+    type: [Array, Function],
+    default: undefined,
+  },
+  transformItems: {
+    type: Function,
+    default(items) {
+      return items;
     },
   },
-  computed: {
-    widgetParams() {
-      return {
-        attribute: this.attribute,
-        limit: this.limit,
-        sortBy: this.sortBy,
-        transformItems: this.transformItems,
-      };
-    },
+  classNames: {
+    type: Object,
+    default: undefined,
   },
-  methods: {
-    refine(value) {
-      this.state.refine(value);
-    },
-  },
-};
+});
+
+const widgetParams = computed(() => ({
+  attribute: props.attribute,
+  limit: props.limit,
+  sortBy: props.sortBy,
+  transformItems: props.transformItems,
+}));
+
+const { state } = useWidget(
+  { connector: connectMenu },
+  widgetParams,
+  { $$widgetType: 'ais.menuSelect' }
+);
+
+usePanelConsumer();
+const { suit } = useSuit('MenuSelect', computed(() => props.classNames));
+
+function refine(value) {
+  state.value.refine(value);
+}
 </script>

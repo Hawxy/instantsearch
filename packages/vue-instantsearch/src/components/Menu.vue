@@ -47,70 +47,64 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue';
 import { connectMenu } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createPanelConsumerMixin } from '../mixins/panel';
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
+import { usePanelConsumer } from '../composables/usePanel';
 
-export default {
-  name: 'AisMenu',
-  mixins: [
-    createSuitMixin({ name: 'Menu' }),
-    createWidgetMixin(
-      { connector: connectMenu },
-      {
-        $$widgetType: 'ais.menu',
-      }
-    ),
-    createPanelConsumerMixin(),
-  ],
-  props: {
-    attribute: {
-      type: String,
-      required: true,
-    },
-    // TODO: implement searchable in connector
-    // searchable: {
-    //   type: Boolean,
-    //   default: false,
-    // },
-    limit: {
-      type: Number,
-      default: undefined,
-    },
-    showMoreLimit: {
-      type: Number,
-      default: undefined,
-    },
-    showMore: {
-      type: Boolean,
-      default: false,
-    },
-    sortBy: {
-      type: [Array, Function],
-      default: undefined,
-    },
-    transformItems: {
-      type: Function,
-      default: undefined,
-    },
+defineOptions({ name: 'AisMenu' });
+
+const props = defineProps({
+  attribute: {
+    type: String,
+    required: true,
   },
-  computed: {
-    widgetParams() {
-      return {
-        attribute: this.attribute,
-        limit: this.limit,
-        showMore: this.showMore,
-        showMoreLimit: this.showMoreLimit,
-        sortBy: this.sortBy,
-        transformItems: this.transformItems,
-      };
-    },
-    showShowMoreButton() {
-      return this.state.canRefine && this.showMore;
-    },
+  limit: {
+    type: Number,
+    default: undefined,
   },
-};
+  showMoreLimit: {
+    type: Number,
+    default: undefined,
+  },
+  showMore: {
+    type: Boolean,
+    default: false,
+  },
+  sortBy: {
+    type: [Array, Function],
+    default: undefined,
+  },
+  transformItems: {
+    type: Function,
+    default: undefined,
+  },
+  classNames: {
+    type: Object,
+    default: undefined,
+  },
+});
+
+const widgetParams = computed(() => ({
+  attribute: props.attribute,
+  limit: props.limit,
+  showMore: props.showMore,
+  showMoreLimit: props.showMoreLimit,
+  sortBy: props.sortBy,
+  transformItems: props.transformItems,
+}));
+
+const { state } = useWidget(
+  { connector: connectMenu },
+  widgetParams,
+  { $$widgetType: 'ais.menu' }
+);
+
+usePanelConsumer();
+const { suit } = useSuit('Menu', computed(() => props.classNames));
+
+const showShowMoreButton = computed(() => state.value && state.value.canRefine && props.showMore);
 </script>

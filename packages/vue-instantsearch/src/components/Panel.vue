@@ -12,17 +12,26 @@
   </div>
 </template>
 
-<script>
-import { createPanelProviderMixin } from '../mixins/panel';
-import { createSuitMixin } from '../mixins/suit';
+<script setup>
+import { computed, useSlots } from 'vue';
+import { useSuit } from '../composables/useSuit';
+import { usePanelProvider } from '../composables/usePanel';
 
-export default {
-  name: 'AisPanel',
-  mixins: [createSuitMixin({ name: 'Panel' }), createPanelProviderMixin()],
-  methods: {
-    getSlot(name) {
-      return this.$slots[name];
-    },
+defineOptions({ name: 'AisPanel' });
+
+const props = defineProps({
+  classNames: {
+    type: Object,
+    default: undefined,
   },
-};
+});
+
+const { suit } = useSuit('Panel', computed(() => props.classNames));
+const { canRefine } = usePanelProvider();
+
+const slots = useSlots();
+
+function getSlot(name) {
+  return slots[name];
+}
 </script>

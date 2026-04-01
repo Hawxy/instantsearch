@@ -79,127 +79,121 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed } from 'vue';
 import { connectRefinementList } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createPanelConsumerMixin } from '../mixins/panel';
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
+import { usePanelConsumer } from '../composables/usePanel';
 
 import AisHighlight from './Highlight.vue';
 import SearchInput from './SearchInput.vue';
 
+defineOptions({ name: 'AisRefinementList' });
+
 const noop = () => {};
 
-export default {
-  name: 'AisRefinementList',
-  components: { SearchInput, AisHighlight },
-  mixins: [
-    createSuitMixin({ name: 'RefinementList' }),
-    createWidgetMixin(
-      {
-        connector: connectRefinementList,
-      },
-      {
-        $$widgetType: 'ais.refinementList',
-      }
-    ),
-    createPanelConsumerMixin(),
-  ],
-  props: {
-    attribute: {
-      type: String,
-      required: true,
-    },
-    searchable: {
-      type: Boolean,
-      default: undefined,
-    },
-    searchablePlaceholder: {
-      type: String,
-      required: false,
-      default: 'Search here…',
-    },
-    operator: {
-      default: 'or',
-      validator(value) {
-        return value === 'and' || value === 'or';
-      },
-      required: false,
-    },
-    limit: {
-      type: Number,
-      required: false,
-      default: undefined,
-    },
-    showMoreLimit: {
-      type: Number,
-      required: false,
-      default: undefined,
-    },
-    showMore: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    sortBy: {
-      type: [Array, Function],
-      required: false,
-      default: undefined,
-    },
-    transformItems: {
-      type: Function,
-      required: false,
-      default: undefined,
-    },
+const props = defineProps({
+  attribute: {
+    type: String,
+    required: true,
   },
-  data() {
-    return {
-      searchForFacetValuesQuery: '',
-    };
+  searchable: {
+    type: Boolean,
+    default: undefined,
   },
-  computed: {
-    searchForFacetValues: {
-      get() {
-        return this.searchForFacetValuesQuery;
+  searchablePlaceholder: {
+    type: String,
+    required: false,
+    default: 'Search here…',
+  },
+  operator: {
+    default: 'or',
+    validator(value) {
+      return value === 'and' || value === 'or';
+    },
+    required: false,
+  },
+  limit: {
+    type: Number,
+    required: false,
+    default: undefined,
+  },
+  showMoreLimit: {
+    type: Number,
+    required: false,
+    default: undefined,
+  },
+  showMore: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
+  sortBy: {
+    type: [Array, Function],
+    required: false,
+    default: undefined,
+  },
+  transformItems: {
+    type: Function,
+    required: false,
+    default: undefined,
+  },
+  classNames: {
+    type: Object,
+    default: undefined,
+  },
+});
+
+const widgetParams = computed(() => ({
+  attribute: props.attribute,
+  operator: props.operator,
+  limit: props.limit,
+  showMore: props.showMore,
+  showMoreLimit: props.showMoreLimit,
+  sortBy: props.sortBy,
+  escapeFacetValues: true,
+  transformItems: props.transformItems,
+}));
+
+const { state } = useWidget(
+  { connector: connectRefinementList },
+  widgetParams,
+  { $$widgetType: 'ais.refinementList' }
+);
+
+usePanelConsumer();
+const { suit } = useSuit('RefinementList', computed(() => props.classNames));
+
+const searchForFacetValuesQuery = ref('');
+
+const searchForFacetValues = computed({
+  get() {
+    return searchForFacetValuesQuery.value;
+  },
+  set(value) {
+    state.value.searchForItems(value);
+    searchForFacetValuesQuery.value = value;
+  },
+});
+
+const toggleShowMore = computed(() => state.value.toggleShowMore || noop);
+
+const items = computed(() =>
+  state.value.items.map((item) =>
+    Object.assign({}, item, {
+      _highlightResult: {
+        item: {
+          value: item.highlighted,
+        },
       },
-      set(value) {
-        this.state.searchForItems(value);
-        this.searchForFacetValuesQuery = value;
-      },
-    },
-    toggleShowMore() {
-      return this.state.toggleShowMore || noop;
-    },
-    items() {
-      return this.state.items.map((item) =>
-        Object.assign({}, item, {
-          _highlightResult: {
-            item: {
-              value: item.highlighted,
-            },
-          },
-        })
-      );
-    },
-    widgetParams() {
-      return {
-        attribute: this.attribute,
-        operator: this.operator,
-        limit: this.limit,
-        showMore: this.showMore,
-        showMoreLimit: this.showMoreLimit,
-        sortBy: this.sortBy,
-        escapeFacetValues: true,
-        transformItems: this.transformItems,
-      };
-    },
-  },
-  methods: {
-    refine(value) {
-      this.state.refine(value);
-      this.searchForFacetValuesQuery = '';
-    },
-  },
-};
+    })
+  )
+);
+
+function refine(value) {
+  state.value.refine(value);
+  searchForFacetValuesQuery.value = '';
+}
 </script>

@@ -26,43 +26,42 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue';
 import { connectSortBy } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createPanelConsumerMixin } from '../mixins/panel';
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
+import { usePanelConsumer } from '../composables/usePanel';
 
-export default {
-  name: 'AisSortBy',
-  mixins: [
-    createSuitMixin({ name: 'SortBy' }),
-    createWidgetMixin(
-      { connector: connectSortBy },
-      {
-        $$widgetType: 'ais.sortBy',
-      }
-    ),
+defineOptions({ name: 'AisSortBy' });
 
-    createPanelConsumerMixin(),
-  ],
-  props: {
-    items: {
-      type: Array,
-      required: true,
-    },
-    transformItems: {
-      type: Function,
-      default: undefined,
-    },
+const props = defineProps({
+  items: {
+    type: Array,
+    required: true,
   },
-  computed: {
-    widgetParams() {
-      return {
-        items: this.items,
-        transformItems: this.transformItems,
-      };
-    },
+  transformItems: {
+    type: Function,
+    default: undefined,
   },
-};
+  classNames: {
+    type: Object,
+    default: undefined,
+  },
+});
+
+const widgetParams = computed(() => ({
+  items: props.items,
+  transformItems: props.transformItems,
+}));
+
+const { state } = useWidget(
+  { connector: connectSortBy },
+  widgetParams,
+  { $$widgetType: 'ais.sortBy' }
+);
+
+usePanelConsumer();
+const { suit } = useSuit('SortBy', computed(() => props.classNames));
 </script>

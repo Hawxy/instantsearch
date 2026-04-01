@@ -7,8 +7,6 @@
     @submit.prevent="onFormSubmit"
     @reset.prevent="onFormReset"
   >
-    <!-- :value/@input allows us to pass v-model to the component in v2 -->
-    <!-- :modelValue/@update:modelValue allows us to pass v-model to the component in v3 -->
     <input
       type="search"
       autocorrect="off"
@@ -20,7 +18,7 @@
       :placeholder="placeholder"
       :autofocus="autofocus"
       :class="suit('input')"
-      :value="value || modelValue"
+      :value="modelValue"
       @focus="$emit('focus', $event)"
       @blur="$emit('blur', $event)"
       @input="onInput($event)"
@@ -52,7 +50,7 @@
       :title="resetTitle"
       :class="suit('reset')"
       :hidden="
-        (!value && !modelValue) ||
+        !modelValue ||
         (showLoadingIndicator && shouldShowLoadingIndicator)
       "
     >
@@ -107,77 +105,76 @@
   </form>
 </template>
 
-<script>
-import { createSuitMixin } from '../mixins/suit';
+<script setup>
+import { ref, computed } from 'vue';
+import { useSuit } from '../composables/useSuit';
 
-export default {
-  name: 'SearchInput',
-  mixins: [createSuitMixin({ name: 'SearchBox' })],
-  props: {
-    placeholder: {
-      type: String,
-      default: 'Search here…',
-    },
-    autofocus: {
-      type: Boolean,
-      default: false,
-    },
-    showLoadingIndicator: {
-      type: Boolean,
-      default: false,
-    },
-    shouldShowLoadingIndicator: {
-      type: Boolean,
-      default: false,
-    },
-    ignoreCompositionEvents: {
-      type: Boolean,
-      default: false,
-    },
-    submitTitle: {
-      type: String,
-      default: 'Search',
-    },
-    resetTitle: {
-      type: String,
-      default: 'Clear',
-    },
-    value: {
-      type: String,
-      required: false,
-      default: undefined,
-    },
-    modelValue: {
-      type: String,
-      required: false,
-      default: undefined,
-    },
+defineOptions({ name: 'SearchInput' });
+
+const props = defineProps({
+  placeholder: {
+    type: String,
+    default: 'Search here…',
   },
-  emits: ['input', 'update:modelValue', 'blur', 'focus', 'reset'],
-  data() {
-    return {
-      query: '',
-    };
+  autofocus: {
+    type: Boolean,
+    default: false,
   },
-  methods: {
-    isFocused() {
-      return document.activeElement === this.$refs.input;
-    },
-    onInput(event) {
-      if (!(this.ignoreCompositionEvents && event.isComposing)) {
-        this.$emit('input', event.target.value);
-        this.$emit('update:modelValue', event.target.value);
-      }
-    },
-    onFormSubmit() {
-      const input = this.$refs.input;
-      input.blur();
-    },
-    onFormReset() {
-      this.$emit('input', '');
-      this.$emit('update:modelValue', '');
-      this.$emit('reset');
-    },
+  showLoadingIndicator: {
+    type: Boolean,
+    default: false,
   },
-};
+  shouldShowLoadingIndicator: {
+    type: Boolean,
+    default: false,
+  },
+  ignoreCompositionEvents: {
+    type: Boolean,
+    default: false,
+  },
+  submitTitle: {
+    type: String,
+    default: 'Search',
+  },
+  resetTitle: {
+    type: String,
+    default: 'Clear',
+  },
+  modelValue: {
+    type: String,
+    required: false,
+    default: undefined,
+  },
+  classNames: {
+    type: Object,
+    default: undefined,
+  },
+});
+
+const emit = defineEmits(['update:modelValue', 'blur', 'focus', 'reset']);
+
+const { suit } = useSuit('SearchBox', computed(() => props.classNames));
+
+const input = ref(null);
+
+function isFocused() {
+  return document.activeElement === input.value;
+}
+
+function onInput(event) {
+  if (!(props.ignoreCompositionEvents && event.isComposing)) {
+    emit('update:modelValue', event.target.value);
+  }
+}
+
+function onFormSubmit() {
+  input.value.blur();
+}
+
+function onFormReset() {
+  emit('update:modelValue', '');
+  emit('reset');
+}
+
+defineExpose({ isFocused });
 </script>

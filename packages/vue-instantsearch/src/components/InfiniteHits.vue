@@ -98,65 +98,63 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue';
 import { connectInfiniteHitsWithInsights } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
 
-export default {
-  name: 'AisInfiniteHits',
-  mixins: [
-    createWidgetMixin(
-      {
-        connector: connectInfiniteHitsWithInsights,
-      },
-      {
-        $$widgetType: 'ais.infiniteHits',
-      }
-    ),
-    createSuitMixin({ name: 'InfiniteHits' }),
-  ],
-  props: {
-    showBanner: {
-      type: Boolean,
-      default: true,
-    },
-    showPrevious: {
-      type: Boolean,
-      default: false,
-    },
-    escapeHTML: {
-      type: Boolean,
-      default: true,
-    },
-    transformItems: {
-      type: Function,
-      default: undefined,
-    },
-    cache: {
-      type: Object,
-      default: undefined,
-    },
+defineOptions({ name: 'AisInfiniteHits' });
+
+const props = defineProps({
+  showBanner: {
+    type: Boolean,
+    default: true,
   },
-  computed: {
-    widgetParams() {
-      return {
-        showBanner: this.showBanner,
-        showPrevious: this.showPrevious,
-        escapeHTML: this.escapeHTML,
-        transformItems: this.transformItems,
-        cache: this.cache,
-      };
-    },
+  showPrevious: {
+    type: Boolean,
+    default: false,
   },
-  methods: {
-    refinePrevious() {
-      this.state.showPrevious();
-    },
-    refineNext() {
-      this.state.showMore();
-    },
+  escapeHTML: {
+    type: Boolean,
+    default: true,
   },
-};
+  transformItems: {
+    type: Function,
+    default: undefined,
+  },
+  cache: {
+    type: Object,
+    default: undefined,
+  },
+  classNames: {
+    type: Object,
+    default: undefined,
+  },
+});
+
+const widgetParams = computed(() => ({
+  showBanner: props.showBanner,
+  showPrevious: props.showPrevious,
+  escapeHTML: props.escapeHTML,
+  transformItems: props.transformItems,
+  cache: props.cache,
+}));
+
+const { state } = useWidget(
+  { connector: connectInfiniteHitsWithInsights },
+  widgetParams,
+  { $$widgetType: 'ais.infiniteHits' }
+);
+
+const { suit } = useSuit('InfiniteHits', computed(() => props.classNames));
+
+function refinePrevious() {
+  state.value.showPrevious();
+}
+
+function refineNext() {
+  state.value.showMore();
+}
 </script>

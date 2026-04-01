@@ -25,44 +25,42 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue';
 import { connectHitsPerPage } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createPanelConsumerMixin } from '../mixins/panel';
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
+import { usePanelConsumer } from '../composables/usePanel';
 
-export default {
-  name: 'AisHitsPerPage',
-  mixins: [
-    createSuitMixin({ name: 'HitsPerPage' }),
-    createWidgetMixin(
-      {
-        connector: connectHitsPerPage,
-      },
-      {
-        $$widgetType: 'ais.hitsPerPage',
-      }
-    ),
-    createPanelConsumerMixin(),
-  ],
-  props: {
-    items: {
-      type: Array,
-      required: true,
-    },
-    transformItems: {
-      type: Function,
-      default: undefined,
-    },
+defineOptions({ name: 'AisHitsPerPage' });
+
+const props = defineProps({
+  items: {
+    type: Array,
+    required: true,
   },
-  computed: {
-    widgetParams() {
-      return {
-        items: this.items,
-        transformItems: this.transformItems,
-      };
-    },
+  transformItems: {
+    type: Function,
+    default: undefined,
   },
-};
+  classNames: {
+    type: Object,
+    default: undefined,
+  },
+});
+
+const widgetParams = computed(() => ({
+  items: props.items,
+  transformItems: props.transformItems,
+}));
+
+const { state } = useWidget(
+  { connector: connectHitsPerPage },
+  widgetParams,
+  { $$widgetType: 'ais.hitsPerPage' }
+);
+
+usePanelConsumer();
+const { suit } = useSuit('HitsPerPage', computed(() => props.classNames));
 </script>

@@ -13,72 +13,78 @@
   </div>
 </template>
 
-<script>
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+<script setup>
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
+import { useSuit } from '../composables/useSuit';
+import { useWidget } from '../composables/useWidget';
 import { _objectSpread } from '../util/polyfills';
 
-export default {
-  name: 'AisStateResults',
-  mixins: [
-    createWidgetMixin({ connector: true }),
-    createSuitMixin({ name: 'StateResults' }),
-  ],
-  props: {
-    catchError: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  data() {
-    return {
-      renderFn: () => {
-        const { status, error } = this.instantSearchInstance;
-        const results = this.getParentIndex().getResults();
-        const helper = this.getParentIndex().getHelper();
-        const state = helper ? helper.state : null;
+defineOptions({ name: 'AisStateResults' });
 
-        // @MAJOR no longer spread this inside `results`
-        this.state = {
-          results,
-          state,
-          status,
-          error,
-        };
-      },
-    };
+const props = defineProps({
+  catchError: {
+    type: Boolean,
+    default: false,
   },
-  created() {
-    this.instantSearchInstance.addListener('render', this.renderFn);
-    this.renderFn();
+  classNames: {
+    type: Object,
+    default: undefined,
   },
-  beforeUnmount() {
-    if (this.widget) {
-      this.instantSearchInstance.removeListener('render', this.renderFn);
-      if (this.errorFn) {
-        this.instantSearchInstance.removeListener('error', this.errorFn);
-      }
+});
+
+const { suit } = useSuit('StateResults', computed(() => props.classNames));
+const { instantSearchInstance, getParentIndex } = useWidget(
+  { connector: true },
+  undefined,
+  undefined
+);
+
+const state = ref(null);
+let errorFn;
+
+function renderFn() {
+  const { status, error } = instantSearchInstance;
+  const results = getParentIndex().getResults();
+  const helper = getParentIndex().getHelper();
+  const helperState = helper ? helper.state : null;
+
+  state.value = {
+    results,
+    state: helperState,
+    status,
+    error,
+  };
+}
+
+onMounted(() => {
+  instantSearchInstance.addListener('render', renderFn);
+  renderFn();
+});
+
+onBeforeUnmount(() => {
+  instantSearchInstance.removeListener('render', renderFn);
+  if (errorFn) {
+    instantSearchInstance.removeListener('error', errorFn);
+  }
+});
+
+watch(
+  () => props.catchError,
+  (catchError) => {
+    if (catchError) {
+      errorFn = () => {};
+      instantSearchInstance.addListener('error', errorFn);
+    } else if (errorFn) {
+      instantSearchInstance.removeListener('error', errorFn);
+      errorFn = undefined;
     }
   },
-  watch: {
-    catchError: {
-      immediate: true,
-      handler(catchError) {
-        if (catchError) {
-          this.errorFn = () => {};
-          this.instantSearchInstance.addListener('error', this.errorFn);
-        } else if (this.errorFn) {
-          this.instantSearchInstance.removeListener('error', this.errorFn);
-          this.errorFn = undefined;
-        }
-      },
-    },
-  },
-  computed: {
-    stateResults() {
-      const { results, state, status, error } = this.state;
-      return _objectSpread({}, results, { results, state, status, error });
-    },
-  },
-};
+  { immediate: true }
+);
+
+const stateResults = computed(() => {
+  if (!state.value) return null;
+  const { results, state: helperState, status, error } = state.value;
+  return _objectSpread({}, results, { results, state: helperState, status, error });
+});
 </script>

@@ -36,103 +36,95 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed, reactive } from 'vue';
 import { connectVoiceSearch } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
 
-export default {
-  name: 'AisVoiceSearch',
-  mixins: [
-    createWidgetMixin(
-      {
-        connector: connectVoiceSearch,
-      },
-      {
-        $$widgetType: 'ais.voiceSearch',
-      }
-    ),
-    createSuitMixin({ name: 'VoiceSearch' }),
-  ],
-  props: {
-    searchAsYouSpeak: {
-      type: Boolean,
-      required: false,
-      default: undefined,
-    },
-    language: {
-      type: String,
-      default: undefined,
-    },
-    additionalQueryParameters: {
-      type: Object,
-      default: undefined,
-    },
-    buttonTitle: {
-      type: String,
-      required: false,
-      default: 'Search by voice',
-    },
-    disabledButtonTitle: {
-      type: String,
-      required: false,
-      default: 'Search by voice (not supported on this browser)',
-    },
+defineOptions({ name: 'AisVoiceSearch' });
+
+const props = defineProps({
+  searchAsYouSpeak: {
+    type: Boolean,
+    required: false,
+    default: undefined,
   },
-  data() {
-    return {
-      buttonSvgAttrs: {
-        xmlns: 'http://www.w3.org/2000/svg',
-        width: '16',
-        height: '16',
-        viewBox: '0 0 24 24',
-        fill: 'none',
-        stroke: 'currentColor',
-        strokeWidth: '2',
-        strokeLinecap: 'round',
-        strokeLinejoin: 'round',
-      },
-    };
+  language: {
+    type: String,
+    default: undefined,
   },
-  computed: {
-    widgetParams() {
-      return {
-        searchAsYouSpeak: this.searchAsYouSpeak,
-        language: this.language,
-        additionalQueryParameters: this.additionalQueryParameters,
-      };
-    },
-    errorNotAllowed() {
-      return (
-        this.state.voiceListeningState.status === 'error' &&
-        this.state.voiceListeningState.errorCode === 'not-allowed'
-      );
-    },
-    rootSlotProps() {
-      return {
-        isBrowserSupported: this.state.isBrowserSupported,
-        isListening: this.state.isListening,
-        toggleListening: this.state.toggleListening,
-        voiceListeningState: this.state.voiceListeningState,
-      };
-    },
-    innerSlotProps() {
-      return {
-        status: this.state.voiceListeningState.status,
-        errorCode: this.state.voiceListeningState.errorCode,
-        isListening: this.state.isListening,
-        transcript: this.state.voiceListeningState.transcript,
-        isSpeechFinal: this.state.voiceListeningState.isSpeechFinal,
-        isBrowserSupported: this.state.isBrowserSupported,
-      };
-    },
+  additionalQueryParameters: {
+    type: Object,
+    default: undefined,
   },
-  methods: {
-    handleClick(event) {
-      event.currentTarget.blur();
-      this.state.toggleListening();
-    },
+  buttonTitle: {
+    type: String,
+    required: false,
+    default: 'Search by voice',
   },
-};
+  disabledButtonTitle: {
+    type: String,
+    required: false,
+    default: 'Search by voice (not supported on this browser)',
+  },
+  classNames: {
+    type: Object,
+    default: undefined,
+  },
+});
+
+const widgetParams = computed(() => ({
+  searchAsYouSpeak: props.searchAsYouSpeak,
+  language: props.language,
+  additionalQueryParameters: props.additionalQueryParameters,
+}));
+
+const { state } = useWidget(
+  { connector: connectVoiceSearch },
+  widgetParams,
+  { $$widgetType: 'ais.voiceSearch' }
+);
+
+const { suit } = useSuit('VoiceSearch', computed(() => props.classNames));
+
+const buttonSvgAttrs = reactive({
+  xmlns: 'http://www.w3.org/2000/svg',
+  width: '16',
+  height: '16',
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: '2',
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+});
+
+const errorNotAllowed = computed(() => (
+  state.value &&
+  state.value.voiceListeningState.status === 'error' &&
+  state.value.voiceListeningState.errorCode === 'not-allowed'
+));
+
+const rootSlotProps = computed(() => ({
+  isBrowserSupported: state.value.isBrowserSupported,
+  isListening: state.value.isListening,
+  toggleListening: state.value.toggleListening,
+  voiceListeningState: state.value.voiceListeningState,
+}));
+
+const innerSlotProps = computed(() => ({
+  status: state.value.voiceListeningState.status,
+  errorCode: state.value.voiceListeningState.errorCode,
+  isListening: state.value.isListening,
+  transcript: state.value.voiceListeningState.transcript,
+  isSpeechFinal: state.value.voiceListeningState.isSpeechFinal,
+  isBrowserSupported: state.value.isBrowserSupported,
+}));
+
+function handleClick(event) {
+  event.currentTarget.blur();
+  state.value.toggleListening();
+}
 </script>

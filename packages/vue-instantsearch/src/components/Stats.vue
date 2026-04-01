@@ -15,65 +15,48 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { computed } from 'vue';
 import { connectStats } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
 
-export default {
-  name: 'AisStats',
-  mixins: [
-    createWidgetMixin(
-      { connector: connectStats },
-      {
-        $$widgetType: 'ais.stats',
-      }
-    ),
-    createSuitMixin({ name: 'Stats' }),
-  ],
-  computed: {
-    sortedResultsSentence() {
-      const { nbHits, nbSortedHits } = this.state;
+defineOptions({ name: 'AisStats' });
 
-      const suffix = `sorted out of ${nbHits.toLocaleString()}`;
-
-      if (nbSortedHits === 0) {
-        return `No relevant results ${suffix}`;
-      }
-
-      if (nbSortedHits === 1) {
-        return `1 relevant result ${suffix}`;
-      }
-
-      if (nbSortedHits > 1) {
-        return `${(
-          nbSortedHits || 0
-        ).toLocaleString()} relevant results ${suffix}`;
-      }
-
-      return '';
-    },
-    resultsSentence() {
-      const { nbHits } = this.state;
-
-      if (nbHits === 0) {
-        return 'No results';
-      }
-
-      if (nbHits === 1) {
-        return '1 result';
-      }
-
-      if (nbHits > 1) {
-        return `${nbHits.toLocaleString()} results`;
-      }
-
-      return '';
-    },
-    widgetParams() {
-      return {};
-    },
+const props = defineProps({
+  classNames: {
+    type: Object,
+    default: undefined,
   },
-};
+});
+
+const widgetParams = computed(() => ({}));
+
+const { state } = useWidget(
+  { connector: connectStats },
+  widgetParams,
+  { $$widgetType: 'ais.stats' }
+);
+
+const { suit } = useSuit('Stats', computed(() => props.classNames));
+
+const sortedResultsSentence = computed(() => {
+  if (!state.value) return '';
+  const { nbHits, nbSortedHits } = state.value;
+  const suffix = `sorted out of ${nbHits.toLocaleString()}`;
+  if (nbSortedHits === 0) return `No relevant results ${suffix}`;
+  if (nbSortedHits === 1) return `1 relevant result ${suffix}`;
+  if (nbSortedHits > 1) return `${(nbSortedHits || 0).toLocaleString()} relevant results ${suffix}`;
+  return '';
+});
+
+const resultsSentence = computed(() => {
+  if (!state.value) return '';
+  const { nbHits } = state.value;
+  if (nbHits === 0) return 'No results';
+  if (nbHits === 1) return '1 result';
+  if (nbHits > 1) return `${nbHits.toLocaleString()} results`;
+  return '';
+});
 </script>

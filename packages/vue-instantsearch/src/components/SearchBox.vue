@@ -36,110 +36,95 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed } from 'vue';
 import { connectSearchBox } from 'instantsearch.js/es/connectors/index.umd';
 
-import { createSuitMixin } from '../mixins/suit';
-import { createWidgetMixin } from '../mixins/widget';
+import { useWidget } from '../composables/useWidget';
+import { useSuit } from '../composables/useSuit';
 
 import SearchInput from './SearchInput.vue';
 
-export default {
-  name: 'AisSearchBox',
-  mixins: [
-    createWidgetMixin(
-      {
-        connector: connectSearchBox,
-      },
-      {
-        $$widgetType: 'ais.searchBox',
-      }
-    ),
-    createSuitMixin({ name: 'SearchBox' }),
-  ],
-  components: {
-    SearchInput,
-  },
-  props: {
-    placeholder: {
-      type: String,
-      default: '',
-    },
-    autofocus: {
-      type: Boolean,
-      default: false,
-    },
-    showLoadingIndicator: {
-      type: Boolean,
-      default: true,
-    },
-    ignoreCompositionEvents: {
-      type: Boolean,
-      default: false,
-    },
-    submitTitle: {
-      type: String,
-      default: 'Submit the search query',
-    },
-    resetTitle: {
-      type: String,
-      default: 'Clear the search query',
-    },
-    modelValue: {
-      type: String,
-      default: undefined,
-    },
-    queryHook: {
-      type: Function,
-      default: undefined,
-    },
-  },
-  emits: ['focus', 'blur', 'reset', 'update:modelValue'],
-  data() {
-    return {
-      localValue: '',
-    };
-  },
-  computed: {
-    widgetParams() {
-      return {
-        queryHook: this.queryHook,
-      };
-    },
-    isControlled() {
-      return typeof this.modelValue !== 'undefined';
-    },
-    model() {
-      return this.modelValue;
-    },
-    currentRefinement: {
-      get() {
-        // if the input is controlled, but not up to date
-        // this means it didn't search, and we should pretend it was `set`
-        if (this.isControlled && this.model !== this.localValue) {
-          // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-          this.localValue = this.model;
-          this.$emit('update:modelValue', this.model);
-          this.state.refine(this.model);
-        }
+defineOptions({ name: 'AisSearchBox' });
 
-        // we return the local value if the input is focused to avoid
-        // concurrent updates when typing
-        const { searchInput } = this.$refs;
-        if (searchInput && searchInput.isFocused()) {
-          return this.localValue;
-        }
-
-        return this.model || this.state.query || '';
-      },
-      set(val) {
-        this.localValue = val;
-        this.state.refine(val);
-        if (this.isControlled) {
-          this.$emit('update:modelValue', val);
-        }
-      },
-    },
+const props = defineProps({
+  placeholder: {
+    type: String,
+    default: '',
   },
-};
+  autofocus: {
+    type: Boolean,
+    default: false,
+  },
+  showLoadingIndicator: {
+    type: Boolean,
+    default: true,
+  },
+  ignoreCompositionEvents: {
+    type: Boolean,
+    default: false,
+  },
+  submitTitle: {
+    type: String,
+    default: 'Submit the search query',
+  },
+  resetTitle: {
+    type: String,
+    default: 'Clear the search query',
+  },
+  modelValue: {
+    type: String,
+    default: undefined,
+  },
+  queryHook: {
+    type: Function,
+    default: undefined,
+  },
+  classNames: {
+    type: Object,
+    default: undefined,
+  },
+});
+
+const emit = defineEmits(['focus', 'blur', 'reset', 'update:modelValue']);
+
+const widgetParams = computed(() => ({
+  queryHook: props.queryHook,
+}));
+
+const { state } = useWidget(
+  { connector: connectSearchBox },
+  widgetParams,
+  { $$widgetType: 'ais.searchBox' }
+);
+
+const { suit } = useSuit('SearchBox', computed(() => props.classNames));
+
+const searchInput = ref(null);
+const localValue = ref('');
+
+const isControlled = computed(() => typeof props.modelValue !== 'undefined');
+
+const currentRefinement = computed({
+  get() {
+    if (isControlled.value && props.modelValue !== localValue.value) {
+      localValue.value = props.modelValue;
+      emit('update:modelValue', props.modelValue);
+      state.value.refine(props.modelValue);
+    }
+
+    if (searchInput.value && searchInput.value.isFocused()) {
+      return localValue.value;
+    }
+
+    return props.modelValue || state.value.query || '';
+  },
+  set(val) {
+    localValue.value = val;
+    state.value.refine(val);
+    if (isControlled.value) {
+      emit('update:modelValue', val);
+    }
+  },
+});
 </script>
