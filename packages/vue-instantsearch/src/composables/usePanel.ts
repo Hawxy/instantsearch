@@ -1,11 +1,15 @@
 import { ref, inject, provide, watch, onBeforeUnmount } from 'vue';
-import mitt from 'mitt';
+import mitt, { type Emitter } from 'mitt';
+
+import type { Ref } from 'vue';
+
+type PanelEvents = { [PANEL_CHANGE_EVENT]: boolean };
 
 export const PANEL_EMITTER_NAMESPACE = 'instantSearchPanelEmitter';
-export const PANEL_CHANGE_EVENT = 'PANEL_CHANGE_EVENT';
+export const PANEL_CHANGE_EVENT = 'PANEL_CHANGE_EVENT' as const;
 
-export function usePanelProvider(emitterProp) {
-  const emitter = emitterProp || mitt();
+export function usePanelProvider(emitterProp?: Emitter<PanelEvents>) {
+  const emitter = emitterProp || mitt<PanelEvents>();
   const canRefine = ref(true);
 
   provide(PANEL_EMITTER_NAMESPACE, emitter);
@@ -22,10 +26,10 @@ export function usePanelProvider(emitterProp) {
 }
 
 export function usePanelConsumer({
-  mapStateToCanRefine = (state) => Boolean(state.canRefine),
+  mapStateToCanRefine = (state: any) => Boolean(state.canRefine),
 } = {}) {
-  const emitter = inject(PANEL_EMITTER_NAMESPACE, { emit: () => {} });
-  const state = ref(null);
+  const emitter = inject<Emitter<PanelEvents>>(PANEL_EMITTER_NAMESPACE, { emit: () => {} } as any);
+  const state: Ref<any> = ref(null);
   let hasAlreadyEmitted = false;
   let previousCanRefine;
 

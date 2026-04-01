@@ -3,12 +3,11 @@ import { INSTANTSEARCH_FUTURE_DEFAULTS } from 'instantsearch.js/es/lib/InstantSe
 import { version } from '../../package.json'; // rollup does pick only what needed from json
 import { createSuitMixin } from '../mixins/suit';
 
-import { _objectSpread } from './polyfills';
 import { version as vueVersion } from 'vue';
 import { warn } from './warn';
 
 export const createInstantSearchComponent = (component) =>
-  _objectSpread(
+  Object.assign(
     {
       mixins: [createSuitMixin({ name: 'InstantSearch' })],
       provide() {

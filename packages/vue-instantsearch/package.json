@@ -36,14 +36,14 @@
     "watch:es": "yarn --silent build --watch"
   },
   "dependencies": {
-    "@swc/helpers": "0.5.18",
+    "@swc/helpers": "0.5.20",
     "instantsearch-ui-components": "0.23.0",
     "instantsearch.js": "4.93.0",
-    "mitt": "^2.1.0"
+    "mitt": "^3.0.1"
   },
   "peerDependencies": {
     "@vue/server-renderer": "^3.3.0",
-    "algoliasearch": ">= 3.32.0 < 6",
+    "algoliasearch": ">= 5 < 6",
     "vue": "^3.3.0"
   },
   "peerDependenciesMeta": {
@@ -55,15 +55,15 @@
     "@vue/compiler-sfc": "3.3.13",
     "@vue/server-renderer": "3.3.13",
     "@vue/test-utils": "2.4.6",
-    "algoliasearch": "5.1.1",
+    "algoliasearch": "^5.50.0",
     "algoliasearch-helper": "3.28.1",
     "instantsearch.css": "8.13.0",
     "rollup-plugin-vue": "6.0.0",
     "vue": "3.3.13",
-    "vue-i18n": "9.9.0",
-    "vue-router": "4.2.5",
-    "vue-slider-component": "3.0.15",
-    "vue-tsc": "1.8.27",
+    "vue-i18n": "11.3.0",
+    "vue-router": "5.0.4",
+    "vue-slider-component": "3.2.24",
+    "vue-tsc": "3.2.6",
     "vuex": "4.1.0"
   }
 }

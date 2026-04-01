@@ -1,3 +1,4 @@
+import type { SearchResults, SearchParameters } from 'algoliasearch-helper';
 import type {
   Connector,
   InstantSearch,
@@ -9,8 +10,7 @@ import type {
   UnknownWidgetParams,
   Renderer,
   Unmounter,
-} from 'instantsearch.js';
-import type { SearchResults, SearchParameters } from 'algoliasearch-helper';
+} from 'instantsearch.js/es/types';
 
 export type {
   Connector,

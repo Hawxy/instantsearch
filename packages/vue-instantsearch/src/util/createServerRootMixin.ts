@@ -5,9 +5,14 @@ import {
 } from 'instantsearch.js/es/lib/server';
 import { createSSRApp } from 'vue';
 
+import type { InstantSearch } from '../types';
+
 import { warn } from './warn';
 
-function defaultCloneComponent(componentInstance, { mixins = [] } = {}) {
+type InitialResults = Record<string, any>;
+type CloneComponent = (componentInstance: any, options?: { mixins?: any[] }) => any;
+
+function defaultCloneComponent(componentInstance: any, { mixins = [] }: { mixins?: any[] } = {}) {
   const options = {
     serverPrefetch: undefined,
     fetch: undefined,
@@ -35,10 +40,16 @@ function defaultCloneComponent(componentInstance, { mixins = [] } = {}) {
   return app;
 }
 
-function augmentInstantSearch(instantSearchOptions, cloneComponent) {
-  const search = instantsearch(instantSearchOptions);
+function augmentInstantSearch(instantSearchOptions: Record<string, any>, cloneComponent: CloneComponent) {
+  const search = instantsearch(instantSearchOptions) as InstantSearch & {
+    findResultsState: (props: { component: any; renderToString: (app: any) => Promise<string> }) => Promise<InitialResults>;
+    getState: () => InitialResults;
+    __forceRender: (widget: any, parent: any) => void;
+    hydrate: (results: InitialResults) => void;
+    _initialResults?: InitialResults;
+  };
 
-  let initialResults;
+  let initialResults: InitialResults | undefined;
 
   /**
    * main API for SSR, called in serverPrefetch of a root component which contains instantsearch
@@ -47,15 +58,15 @@ function augmentInstantSearch(instantSearchOptions, cloneComponent) {
    * @param {Function} props.renderToString the function to render componentInstance to string
    * @returns {Promise} result of the search, to save for .hydrate
    */
-  search.findResultsState = function ({ component, renderToString }) {
+  search.findResultsState = function ({ component, renderToString }: { component: any; renderToString: (app: any) => Promise<string> }) {
     if (!renderToString) {
       throw new Error(
         'findResultsState requires `renderToString: (component) => Promise<string>` in the first argument.'
       );
     }
 
-    let app;
-    let instance;
+    let app: any;
+    let instance: InstantSearch;
 
     return Promise.resolve()
       .then(() => {
@@ -120,7 +131,7 @@ function augmentInstantSearch(instantSearchOptions, cloneComponent) {
    * @param {object} parent The local parent index
    * @returns {void}
    */
-  search.__forceRender = function (widget, parent) {
+  search.__forceRender = function (widget: any, parent: any) {
     const results = parent.getResults();
 
     // this happens when a different InstantSearch gets rendered initially,
@@ -156,7 +167,7 @@ function augmentInstantSearch(instantSearchOptions, cloneComponent) {
    * @param {object} results a map of indexId: SearchResults
    * @returns {void}
    */
-  search.hydrate = function (results) {
+  search.hydrate = function (results: InitialResults) {
     if (!results) {
       warn(
         'The result of `findResultsState()` needs to be passed to `hydrate()`.'
@@ -172,8 +183,8 @@ function augmentInstantSearch(instantSearchOptions, cloneComponent) {
   return search;
 }
 
-export function createServerRootMixin(instantSearchOptions = {}) {
-  const { $cloneComponent = defaultCloneComponent } = instantSearchOptions;
+export function createServerRootMixin(instantSearchOptions: Record<string, any> = {}) {
+  const { $cloneComponent = defaultCloneComponent }: { $cloneComponent?: CloneComponent } = instantSearchOptions;
 
   const search = augmentInstantSearch(instantSearchOptions, $cloneComponent);
 

@@ -1,12 +1,15 @@
-import { ref, inject, watch, onBeforeUnmount, computed } from 'vue';
+import { ref, inject, watch, onBeforeUnmount } from 'vue';
 import { warn } from '../util/warn';
 
+import type { Ref, ComputedRef } from 'vue';
+import type { InstantSearch } from '../types';
+
 export function useWidget(
-  { connector } = {},
-  widgetParams,
-  additionalProperties = {}
+  { connector }: { connector?: Function | true } = {},
+  widgetParams?: ComputedRef<Record<string, unknown>>,
+  additionalProperties: Record<string, unknown> = {}
 ) {
-  const instantSearchInstance = inject('$_ais_instantSearchInstance');
+  const instantSearchInstance = inject<InstantSearch>('$_ais_instantSearchInstance');
 
   if (!instantSearchInstance) {
     throw new TypeError(
@@ -14,16 +17,16 @@ export function useWidget(
     );
   }
 
-  const getParentIndex = inject(
+  const getParentIndex = inject<() => any>(
     '$_ais_getParentIndex',
     () => instantSearchInstance.mainIndex
   );
 
-  const state = ref(null);
-  let factory;
-  let widget;
+  const state: Ref<any> = ref(null);
+  let factory: any;
+  let widget: any;
 
-  function updateState(newState = {}, isFirstRender) {
+  function updateState(newState: any = {}, isFirstRender: boolean) {
     if (!isFirstRender) {
       state.value = newState;
     }

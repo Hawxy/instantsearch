@@ -1,7 +1,9 @@
 import suit from '../util/suit';
 
-export function useSuit(name, classNames) {
-  function suitFn(element, modifier) {
+import type { ComputedRef } from 'vue';
+
+export function useSuit(name: string, classNames?: ComputedRef<Record<string, string> | undefined>) {
+  function suitFn(element?: string, modifier?: string) {
     const className = suit(name, element, modifier);
     const userClassName =
       classNames && classNames.value && classNames.value[className];
