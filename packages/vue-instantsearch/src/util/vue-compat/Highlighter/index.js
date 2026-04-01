@@ -1,1 +1,1 @@
-export { default } from './index-vue2';
+export { default } from '../../../components/Highlighter';

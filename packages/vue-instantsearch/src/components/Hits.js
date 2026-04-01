@@ -1,9 +1,9 @@
 import { createHitsComponent } from 'instantsearch-ui-components';
 import { connectHitsWithInsights } from 'instantsearch.js/es/connectors/index.umd';
+import { h } from 'vue';
 
 import { createSuitMixin } from '../mixins/suit';
 import { createWidgetMixin } from '../mixins/widget';
-import { getScopedSlot, renderCompat } from '../util/vue-compat';
 
 export default {
   name: 'AisHits',
@@ -41,14 +41,14 @@ export default {
       };
     },
   },
-  render: renderCompat(function (h) {
+  render() {
     if (!this.state) {
       return null;
     }
 
-    const defaultSlot = getScopedSlot(this, 'default');
-    const itemSlot = getScopedSlot(this, 'item');
-    const bannerSlot = getScopedSlot(this, 'banner');
+    const defaultSlot = this.$slots.default;
+    const itemSlot = this.$slots.item;
+    const bannerSlot = this.$slots.banner;
 
     const itemComponent = ({
       hit,
@@ -63,11 +63,9 @@ export default {
         'li',
         {
           key: hit.objectID,
-          attrs: rootProps,
-          on: {
-            click: onClick,
-            auxclick: onAuxClick,
-          },
+          ...rootProps,
+          onClick,
+          onAuxclick: onAuxClick,
         },
         [
           (itemSlot &&
@@ -88,9 +86,7 @@ export default {
       return h(
         'div',
         {
-          attrs: {
-            class: this.suit(),
-          },
+          class: this.suit(),
         },
         [
           defaultSlot({

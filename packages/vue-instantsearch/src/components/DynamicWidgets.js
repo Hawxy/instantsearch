@@ -1,14 +1,11 @@
 import { connectDynamicWidgets } from 'instantsearch.js/es/connectors/index.umd';
+import { h } from 'vue';
 
 import { createSuitMixin } from '../mixins/suit';
 import { createWidgetMixin } from '../mixins/widget';
-import { _objectSpread } from '../util/polyfills';
-import { isVue3, renderCompat, getDefaultSlot } from '../util/vue-compat';
 
 function getWidgetAttribute(vnode) {
-  const props = isVue3
-    ? vnode.props
-    : vnode.componentOptions && vnode.componentOptions.propsData;
+  const props = vnode.props;
   if (props) {
     if (props.attribute) {
       return props.attribute;
@@ -18,16 +15,8 @@ function getWidgetAttribute(vnode) {
     }
   }
 
-  let children;
-  if (isVue3) {
-    children =
-      vnode.children && vnode.children.default && vnode.children.default();
-  } else {
-    children =
-      vnode.componentOptions && vnode.componentOptions.children
-        ? vnode.componentOptions.children
-        : vnode.children;
-  }
+  const children =
+    vnode.children && vnode.children.default && vnode.children.default();
 
   if (Array.isArray(children)) {
     // return first child with a truthy attribute
@@ -67,10 +56,11 @@ export default {
       default: undefined,
     },
   },
-  render: renderCompat(function (h) {
+  render() {
     const components = new Map();
 
-    (getDefaultSlot(this) || []).forEach((vnode) => {
+    const defaultSlot = this.$slots.default;
+    (defaultSlot ? defaultSlot() : []).forEach((vnode) => {
       const attribute = getWidgetAttribute(vnode);
       if (attribute) {
         components.set(
@@ -87,12 +77,10 @@ export default {
 
       return h(
         'div',
-        _objectSpread(
-          {
-            class: [this.suit()],
-          },
-          { attrs: { hidden: true } }
-        ),
+        {
+          class: [this.suit()],
+          hidden: true,
+        },
         allComponents
       );
     }
@@ -104,7 +92,7 @@ export default {
         components.get(attribute)
       )
     );
-  }),
+  },
   computed: {
     widgetParams() {
       return {

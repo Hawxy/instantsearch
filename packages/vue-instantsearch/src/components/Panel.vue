@@ -15,16 +15,13 @@
 <script>
 import { createPanelProviderMixin } from '../mixins/panel';
 import { createSuitMixin } from '../mixins/suit';
-import { isVue3 } from '../util/vue-compat';
 
 export default {
   name: 'AisPanel',
   mixins: [createSuitMixin({ name: 'Panel' }), createPanelProviderMixin()],
   methods: {
     getSlot(name) {
-      return isVue3
-        ? this.$slots[name]
-        : this.$slots[name] || this.$scopedSlots[name];
+      return this.$slots[name];
     },
   },
 };

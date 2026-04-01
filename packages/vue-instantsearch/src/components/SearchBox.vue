@@ -20,20 +20,17 @@
         v-model="currentRefinement"
         ref="searchInput"
       >
-        <template #loading-indicator v-if="isVue3">
+        <template #loading-indicator>
           <slot name="loading-indicator" />
         </template>
-        <slot v-if="isVue2" name="loading-indicator" slot="loading-indicator" />
 
-        <template #submit-icon v-if="isVue3">
+        <template #submit-icon>
           <slot name="submit-icon" />
         </template>
-        <slot v-if="isVue2" name="submit-icon" slot="submit-icon" />
 
-        <template #reset-icon v-if="isVue3">
+        <template #reset-icon>
           <slot name="reset-icon" />
         </template>
-        <slot v-if="isVue2" name="reset-icon" slot="reset-icon" />
       </search-input>
     </slot>
   </div>
@@ -44,7 +41,6 @@ import { connectSearchBox } from 'instantsearch.js/es/connectors/index.umd';
 
 import { createSuitMixin } from '../mixins/suit';
 import { createWidgetMixin } from '../mixins/widget';
-import { isVue3, isVue2 } from '../util/vue-compat';
 
 import SearchInput from './SearchInput.vue';
 
@@ -89,10 +85,6 @@ export default {
       type: String,
       default: 'Clear the search query',
     },
-    value: {
-      type: String,
-      default: undefined,
-    },
     modelValue: {
       type: String,
       default: undefined,
@@ -102,11 +94,10 @@ export default {
       default: undefined,
     },
   },
+  emits: ['focus', 'blur', 'reset', 'update:modelValue'],
   data() {
     return {
       localValue: '',
-      isVue2,
-      isVue3,
     };
   },
   computed: {
@@ -116,13 +107,10 @@ export default {
       };
     },
     isControlled() {
-      return (
-        typeof this.value !== 'undefined' ||
-        typeof this.modelValue !== 'undefined'
-      );
+      return typeof this.modelValue !== 'undefined';
     },
     model() {
-      return this.value || this.modelValue;
+      return this.modelValue;
     },
     currentRefinement: {
       get() {
@@ -131,7 +119,6 @@ export default {
         if (this.isControlled && this.model !== this.localValue) {
           // eslint-disable-next-line vue/no-side-effects-in-computed-properties
           this.localValue = this.model;
-          this.$emit('input', this.model);
           this.$emit('update:modelValue', this.model);
           this.state.refine(this.model);
         }
@@ -149,7 +136,6 @@ export default {
         this.localValue = val;
         this.state.refine(val);
         if (this.isControlled) {
-          this.$emit('input', val);
           this.$emit('update:modelValue', val);
         }
       },

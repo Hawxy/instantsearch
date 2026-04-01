@@ -1,8 +1,8 @@
 import indexWidget from 'instantsearch.js/es/widgets/index/index';
+import { h } from 'vue';
 
 import { createSuitMixin } from '../mixins/suit';
 import { createWidgetMixin } from '../mixins/widget';
-import { renderCompat, getDefaultSlot } from '../util/vue-compat';
 
 // wrapped in a dummy function, since indexWidget doesn't render
 const connectIndex = () => indexWidget;
@@ -35,9 +35,10 @@ export default {
       required: false,
     },
   },
-  render: renderCompat(function (h) {
-    return h('div', {}, getDefaultSlot(this));
-  }),
+  render() {
+    const defaultSlot = this.$slots.default;
+    return h('div', {}, defaultSlot ? defaultSlot() : undefined);
+  },
   computed: {
     widgetParams() {
       return {

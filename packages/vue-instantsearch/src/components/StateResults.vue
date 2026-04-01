@@ -17,7 +17,6 @@
 import { createSuitMixin } from '../mixins/suit';
 import { createWidgetMixin } from '../mixins/widget';
 import { _objectSpread } from '../util/polyfills';
-import { isVue3 } from '../util/vue-compat';
 
 export default {
   name: 'AisStateResults',
@@ -53,7 +52,7 @@ export default {
     this.instantSearchInstance.addListener('render', this.renderFn);
     this.renderFn();
   },
-  [isVue3 ? 'beforeUnmount' : 'beforeDestroy']() {
+  beforeUnmount() {
     if (this.widget) {
       this.instantSearchInstance.removeListener('render', this.renderFn);
       if (this.errorFn) {

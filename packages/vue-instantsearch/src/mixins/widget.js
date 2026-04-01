@@ -1,5 +1,4 @@
 import { _objectSpread } from '../util/polyfills';
-import { isVue3 } from '../util/vue-compat';
 import { warn } from '../util/warn';
 
 export const createWidgetMixin = (
@@ -63,7 +62,7 @@ Read more on using connectors: https://alg.li/vue-custom`
       );
     }
   },
-  [isVue3 ? 'beforeUnmount' : 'beforeDestroy']() {
+  beforeUnmount() {
     if (this.widget) {
       this.getParentIndex().removeWidgets([this.widget]);
     }

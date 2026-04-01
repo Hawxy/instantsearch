@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import { createApp } from 'vue';
 import InstantSearch from 'vue-instantsearch';
 
 import './Theme.css';
@@ -7,10 +7,6 @@ import './App.mobile.css';
 import './widgets/PriceSlider.css';
 import App from './App.vue';
 
-Vue.use(InstantSearch);
-
-Vue.config.productionTip = false;
-
-new Vue({
-  render: (h) => h(App),
-}).$mount('#app');
+const app = createApp(App);
+app.use(InstantSearch);
+app.mount('#app');

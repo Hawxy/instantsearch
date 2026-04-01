@@ -3,8 +3,8 @@ import {
   waitForResults,
   getInitialResults,
 } from 'instantsearch.js/es/lib/server';
+import { createSSRApp } from 'vue';
 
-import { isVue3, isVue2, Vue2, createSSRApp } from './vue-compat';
 import { warn } from './warn';
 
 function defaultCloneComponent(componentInstance, { mixins = [] } = {}) {
@@ -15,46 +15,22 @@ function defaultCloneComponent(componentInstance, { mixins = [] } = {}) {
     name: 'ais-ssr-root-component',
   };
 
-  let app;
-
-  if (isVue3) {
-    const appOptions = Object.assign({}, componentInstance.$options, options);
-    appOptions.mixins = [...mixins, ...(appOptions.mixins || [])];
-    app = createSSRApp(appOptions);
-    if (componentInstance.$router) {
-      app.use(componentInstance.$router);
-    }
-    if (componentInstance.$store) {
-      app.use(componentInstance.$store);
-    }
-    if (componentInstance.$i18n) {
-      app.use(componentInstance.$i18n);
-    }
-  } else {
-    // copy over global Vue APIs
-    options.router = componentInstance.$router;
-    options.store = componentInstance.$store;
-    options.i18n = componentInstance.$i18n;
-
-    const Extended = componentInstance.$vnode
-      ? componentInstance.$vnode.componentOptions.Ctor.extend(options)
-      : Vue2.component(
-          options.name,
-          Object.assign({}, componentInstance.$options, options)
-        );
-
-    app = new Extended({
-      propsData: componentInstance.$options.propsData,
-      mixins: [...mixins],
-    });
+  const appOptions = Object.assign({}, componentInstance.$options, options);
+  appOptions.mixins = [...mixins, ...(appOptions.mixins || [])];
+  const app = createSSRApp(appOptions);
+  if (componentInstance.$router) {
+    app.use(componentInstance.$router);
+  }
+  if (componentInstance.$store) {
+    app.use(componentInstance.$store);
+  }
+  if (componentInstance.$i18n) {
+    app.use(componentInstance.$i18n);
   }
 
   // https://stackoverflow.com/a/48195006/3185307
   app.$slots = componentInstance.$slots;
   app.$root = componentInstance.$root;
-  if (isVue2) {
-    app.$options.serverPrefetch = [];
-  }
 
   return app;
 }

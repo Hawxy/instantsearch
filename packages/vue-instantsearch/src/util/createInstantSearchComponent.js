@@ -4,7 +4,7 @@ import { version } from '../../package.json'; // rollup does pick only what need
 import { createSuitMixin } from '../mixins/suit';
 
 import { _objectSpread } from './polyfills';
-import { isVue3, version as vueVersion } from './vue-compat';
+import { version as vueVersion } from 'vue';
 import { warn } from './warn';
 
 export const createInstantSearchComponent = (component) =>
@@ -95,7 +95,7 @@ export const createInstantSearchComponent = (component) =>
           }
         });
       },
-      [isVue3 ? 'beforeUnmount' : 'beforeDestroy']() {
+      beforeUnmount() {
         if (this.instantSearchInstance.started) {
           this.instantSearchInstance.dispose();
         }

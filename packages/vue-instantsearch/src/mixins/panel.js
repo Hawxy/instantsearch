@@ -1,7 +1,5 @@
 import mitt from 'mitt';
 
-import { isVue3 } from '../util/vue-compat';
-
 export const PANEL_EMITTER_NAMESPACE = 'instantSearchPanelEmitter';
 export const PANEL_CHANGE_EVENT = 'PANEL_CHANGE_EVENT';
 
@@ -30,7 +28,7 @@ export const createPanelProviderMixin = () => ({
       this.updateCanRefine(value);
     });
   },
-  [isVue3 ? 'beforeUnmount' : 'beforeDestroy']() {
+  beforeUnmount() {
     this.emitter.all.clear();
   },
   methods: {

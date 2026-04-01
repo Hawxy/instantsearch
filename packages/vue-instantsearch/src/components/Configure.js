@@ -1,8 +1,8 @@
 import { connectConfigure } from 'instantsearch.js/es/connectors/index.umd';
+import { h } from 'vue';
 
 import { createSuitMixin } from '../mixins/suit';
 import { createWidgetMixin } from '../mixins/widget';
-import { isVue3, renderCompat } from '../util/vue-compat';
 
 export default {
   inheritAttrs: false,
@@ -25,8 +25,8 @@ export default {
       };
     },
   },
-  render: renderCompat(function (h) {
-    const slot = isVue3 ? this.$slots.default : this.$scopedSlots.default;
+  render() {
+    const slot = this.$slots.default;
 
     if (!this.state || !slot) {
       return null;
@@ -44,5 +44,5 @@ export default {
         }),
       ]
     );
-  }),
+  },
 };

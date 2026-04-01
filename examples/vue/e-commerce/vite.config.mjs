@@ -1,4 +1,4 @@
-import vue from '@vitejs/plugin-vue2';
+import vue from '@vitejs/plugin-vue';
 import { defineConfig } from 'vite';
 import commonjs from 'vite-plugin-commonjs';
 
