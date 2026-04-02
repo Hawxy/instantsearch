@@ -2,11 +2,13 @@
  * @jest-environment @instantsearch/testutils/jest-environment-jsdom.ts
  */
 
-import { mount } from '../../../test/utils';
-import { useWidget } from '../useWidget';
-import { warn } from '../../util/warn';
+import { defineComponent, computed, ref, nextTick } from 'vue';
 
-import { defineComponent, computed, ref, type Ref, nextTick } from 'vue';
+import { mount } from '../../../test/utils';
+import { warn } from '../../util/warn';
+import { useWidget } from '../useWidget';
+
+import type { ComputedRef } from 'vue';
 
 jest.mock('../../util/warn');
 
@@ -36,7 +38,7 @@ function createTestComponent({
   connector?: Function | true;
   widgetParamsValue?: Record<string, unknown>;
   additionalProperties?: Record<string, unknown>;
-  widgetParamsRef?: Ref<Record<string, unknown>>;
+  widgetParamsRef?: ComputedRef<Record<string, unknown>>;
 }) {
   let result: ReturnType<typeof useWidget>;
   return {
@@ -176,7 +178,7 @@ describe('useWidget', () => {
       });
 
       // Simulate init (first render)
-      const updateState = connector.mock.calls[0][0];
+      const updateState = (connector.mock.calls as any[])[0][0];
       updateState(state, true);
       expect(getResult().state.value).toBe(null);
 
@@ -288,11 +290,11 @@ describe('useWidget', () => {
       });
 
       // Simulate init (first render — should be skipped)
-      connector.mock.calls[0][0](state, true);
+      (connector.mock.calls as any[])[0][0](state, true);
       expect(getResult().state.value).toBe(null);
 
       // Simulate render
-      connector.mock.calls[0][0](state, false);
+      (connector.mock.calls as any[])[0][0](state, false);
       expect(getResult().state.value).toEqual(state);
     });
   });

@@ -3,7 +3,6 @@
  */
 import { runTestSuites } from '@instantsearch/tests/common';
 import * as testSuites from '@instantsearch/tests/widgets';
-
 import { h, defineComponent } from 'vue';
 
 import { nextTick, mountApp } from '../../test/utils';
@@ -33,7 +32,11 @@ import {
   AisDynamicWidgets,
 } from '../instantsearch';
 
+import type { TestOptionsMap, TestSetupsMap } from '@instantsearch/tests';
+
 jest.unmock('instantsearch.js/es');
+
+type TestSuites = typeof testSuites;
 
 /**
  * prevent rethrowing InstantSearch errors, so tests can be asserted.
@@ -52,7 +55,7 @@ const GlobalErrorSwallower = defineComponent({
   },
 });
 
-const testSetups = {
+const testSetups: TestSetupsMap<TestSuites, 'vue'> = {
   async createRefinementListWidgetTests({
     instantSearchOptions,
     widgetParams,
@@ -60,7 +63,7 @@ const testSetups = {
     mountApp(
       {
         render() { return h(AisInstantSearch, instantSearchOptions, [
-            h(AisRefinementList, widgetParams),
+            h(AisRefinementList, widgetParams as any),
             h(GlobalErrorSwallower),
           ]); },
       },
@@ -76,7 +79,7 @@ const testSetups = {
     mountApp(
       {
         render() { return h(AisInstantSearch, instantSearchOptions, [
-            h(AisHierarchicalMenu, widgetParams),
+            h(AisHierarchicalMenu, widgetParams as any),
             h(GlobalErrorSwallower),
           ]); },
       },
@@ -89,13 +92,13 @@ const testSetups = {
     // The passed `transformItems` prop is meant to apply only to the breadcrumb,
     // not the hierarchical menu
     // eslint-disable-next-line no-unused-vars
-    const { transformItems, ...hierarchicalWidgetParams } = widgetParams;
+    const { transformItems, ...hierarchicalWidgetParams } = widgetParams as any;
 
     mountApp(
       {
         render() { return h(AisInstantSearch, instantSearchOptions, [
-            h(AisBreadcrumb, widgetParams),
-            h(AisHierarchicalMenu, hierarchicalWidgetParams),
+            h(AisBreadcrumb, widgetParams as any),
+            h(AisHierarchicalMenu, hierarchicalWidgetParams as any),
             h(GlobalErrorSwallower),
           ]); },
       },
@@ -108,7 +111,7 @@ const testSetups = {
     mountApp(
       {
         render() { return h(AisInstantSearch, instantSearchOptions, [
-            h(AisMenu, widgetParams),
+            h(AisMenu, widgetParams as any),
             h(GlobalErrorSwallower),
           ]); },
       },
@@ -121,7 +124,7 @@ const testSetups = {
     mountApp(
       {
         render() { return h(AisInstantSearch, instantSearchOptions, [
-            h(AisPagination, widgetParams),
+            h(AisPagination, widgetParams as any),
             h(GlobalErrorSwallower),
           ]); },
       },
@@ -135,8 +138,8 @@ const testSetups = {
       {
         render() { return h(AisInstantSearch, instantSearchOptions, [
             h(AisSearchBox),
-            h(AisInfiniteHits, { id: 'main-hits', ...widgetParams }, {
-              item: ({ item: hit, sendEvent }) =>
+            h(AisInfiniteHits, { id: 'main-hits', ...widgetParams } as any, {
+              item: ({ item: hit, sendEvent }: any) =>
                 h(
                   'div',
                   { 'data-testid': `main-hits-top-level-${hit.__position}` },
@@ -154,11 +157,11 @@ const testSetups = {
                 ),
             }),
             h('div', { id: 'hits-with-defaults' }, [
-              h(AisInfiniteHits, widgetParams),
+              h(AisInfiniteHits, widgetParams as any),
             ]),
             h(AisIndex, { indexName: 'nested' }, () => [
               h(AisInfiniteHits, { id: 'nested-hits' }, {
-                item: ({ item: hit, sendEvent }) =>
+                item: ({ item: hit, sendEvent }: any) =>
                   h(
                     'div',
                     { 'data-testid': `nested-hits-top-level-${hit.__position}` },
@@ -185,8 +188,8 @@ const testSetups = {
       {
         render() { return h(AisInstantSearch, instantSearchOptions, [
             h(AisSearchBox),
-            h(AisHits, { id: 'main-hits', ...widgetParams }, {
-              item: ({ item: hit, sendEvent }) =>
+            h(AisHits, { id: 'main-hits', ...widgetParams } as any, {
+              item: ({ item: hit, sendEvent }: any) =>
                 h(
                   'div',
                   { 'data-testid': `main-hits-top-level-${hit.__position}` },
@@ -204,11 +207,11 @@ const testSetups = {
                 ),
             }),
             h('div', { id: 'hits-with-defaults' }, [
-              h(AisHits, widgetParams),
+              h(AisHits, widgetParams as any),
             ]),
             h(AisIndex, { indexName: 'nested' }, () => [
               h(AisHits, { id: 'nested-hits' }, {
-                item: ({ item: hit, sendEvent }) =>
+                item: ({ item: hit, sendEvent }: any) =>
                   h(
                     'div',
                     { 'data-testid': `nested-hits-top-level-${hit.__position}` },
@@ -234,7 +237,7 @@ const testSetups = {
     mountApp(
       {
         render() { return h(AisInstantSearch, instantSearchOptions, [
-            h(AisRangeInput, widgetParams),
+            h(AisRangeInput, widgetParams as any),
             h(GlobalErrorSwallower),
           ]); },
       },
@@ -269,7 +272,7 @@ const testSetups = {
     mountApp(
       {
         render() { return h(AisInstantSearch, instantSearchOptions, [
-            h(AisHitsPerPage, widgetParams),
+            h(AisHitsPerPage, widgetParams as any),
             h(GlobalErrorSwallower),
           ]); },
       },
@@ -293,7 +296,7 @@ const testSetups = {
               h(AisRefinementList, { attribute })
             ),
             h(AisCurrentRefinements),
-            h(AisClearRefinements, widgetParams),
+            h(AisClearRefinements, widgetParams as any),
             h(GlobalErrorSwallower),
           ]); },
       },
@@ -321,7 +324,7 @@ const testSetups = {
                 ],
               }),
               h(AisRangeInput, { attribute: 'price' }),
-              h(AisCurrentRefinements, widgetParams),
+              h(AisCurrentRefinements, widgetParams as any),
               h(GlobalErrorSwallower),
             ]),
           ]); },
@@ -335,7 +338,7 @@ const testSetups = {
     mountApp(
       {
         render() { return h(AisInstantSearch, instantSearchOptions, [
-            h(AisRatingMenu, widgetParams),
+            h(AisRatingMenu, widgetParams as any),
             h(GlobalErrorSwallower),
           ]); },
       },
@@ -348,7 +351,7 @@ const testSetups = {
     mountApp(
       {
         render() { return h(AisInstantSearch, instantSearchOptions, [
-            h(AisNumericMenu, widgetParams),
+            h(AisNumericMenu, widgetParams as any),
             h(GlobalErrorSwallower),
           ]); },
       },
@@ -364,7 +367,7 @@ const testSetups = {
     mountApp(
       {
         render() { return h(AisInstantSearch, instantSearchOptions, [
-            h(AisToggleRefinement, widgetParams),
+            h(AisToggleRefinement, widgetParams as any),
             h(GlobalErrorSwallower),
           ]); },
       },
@@ -377,7 +380,7 @@ const testSetups = {
     mountApp(
       {
         render() { return h(AisInstantSearch, instantSearchOptions, [
-            h(AisSearchBox, widgetParams),
+            h(AisSearchBox, widgetParams as any),
             h(GlobalErrorSwallower),
           ]); },
       },
@@ -390,7 +393,7 @@ const testSetups = {
     mountApp(
       {
         render() { return h(AisInstantSearch, instantSearchOptions, [
-            h(AisSortBy, widgetParams),
+            h(AisSortBy, widgetParams as any),
             h(GlobalErrorSwallower),
           ]); },
       },
@@ -405,7 +408,7 @@ const testSetups = {
         render() { return h('div', {}, [
             h(AisInstantSearch, instantSearchOptions, [
               h(AisSearchBox),
-              h(AisStats, widgetParams),
+              h(AisStats, widgetParams as any),
               h(GlobalErrorSwallower),
             ]),
           ]); },
@@ -433,7 +436,7 @@ const testSetups = {
     mountApp(
       {
         render() { return h(AisInstantSearch, instantSearchOptions, [
-            h(AisPoweredBy, widgetParams),
+            h(AisPoweredBy, widgetParams as any),
             h(GlobalErrorSwallower),
           ]); },
       },
@@ -448,7 +451,7 @@ const testSetups = {
     mountApp(
       {
         render() { return h(AisInstantSearch, instantSearchOptions, [
-            h(AisMenuSelect, widgetParams),
+            h(AisMenuSelect, widgetParams as any),
             h(GlobalErrorSwallower),
           ]); },
       },
@@ -463,17 +466,17 @@ const testSetups = {
         render() { return h(AisInstantSearch, instantSearchOptions, [
             h(
               AisDynamicWidgets,
-              widgetParams,
-              h(AisRefinementList, { attribute: 'brand' }),
-              h(AisMenu, { attribute: 'category' }),
-              h(AisHierarchicalMenu, {
-                props: {
+              widgetParams as any,
+              [
+                h(AisRefinementList, { attribute: 'brand' }),
+                h(AisMenu, { attribute: 'category' }),
+                h(AisHierarchicalMenu, {
                   attributes: [
                     'hierarchicalCategories.lvl0',
                     'hierarchicalCategories.lvl1',
                   ],
-                },
-              })
+                }),
+              ]
             ),
             h(GlobalErrorSwallower),
           ]); },
@@ -492,7 +495,7 @@ const testSetups = {
   },
 };
 
-const testOptions = {
+const testOptions: TestOptionsMap<TestSuites> = {
   createRefinementListWidgetTests: {
     skippedTests: {
       'selects first item on submitting the search (with searchableSelectOnSubmit: true)': true,
@@ -516,6 +519,8 @@ const testOptions = {
   },
   createSortByWidgetTests: undefined,
   createStatsWidgetTests: undefined,
+  createNumericMenuWidgetTests: undefined,
+  createMenuSelectWidgetTests: undefined,
   createRelatedProductsWidgetTests: {
     skippedTests: {
       'RelatedProducts widget common tests': true,

@@ -4,10 +4,9 @@
 
 /* eslint-disable jest/no-conditional-expect */
 
-import { mount } from '../../test/utils';
-import InstantSearch from '../instantsearch';
 import { createApp } from 'vue';
-import { AisInstantSearch } from '../widgets';
+
+import InstantSearch from '../instantsearch';
 
 const renderlessComponents = ['AisExperimentalConfigureRelatedItems'];
 const nonWidgetComponents = [
@@ -21,15 +20,16 @@ const nonWidgetComponents = [
 ];
 
 function getAllComponents() {
-  const app = createApp();
-  app.component = jest.fn();
+  const app = createApp({ render: () => null });
+  const componentFn = jest.fn();
+  app.component = componentFn as any;
   app.use(InstantSearch);
-  const calls = app.component.mock.calls;
+  const calls = componentFn.mock.calls;
 
-  return calls.map(([installedName, call]) => {
+  return calls.map(([installedName, call]: [string, any]) => {
     const { name } = call;
     let suitClass = `Error! ${name} is missing the suit classes`;
-    let widget = `Error! ${name} is missing the widget`;
+    let widget: string | { $$widgetType: string } = `Error! ${name} is missing the widget`;
 
     try {
       // All components use <script setup> or defineComponent: derive suit class from name
@@ -48,7 +48,7 @@ function getAllComponents() {
         throw new Error('not a widget');
       }
 
-      const props = {};
+      const props: Record<string, any> = {};
       if (name === 'AisHierarchicalMenu' || name === 'AisBreadcrumb') {
         props.attributes = ['attr'];
       } else if (name === 'AisExperimentalConfigureRelatedItems') {
@@ -99,11 +99,11 @@ const components = getAllComponents();
 describe('DOM component', () => {
   test.each(
     components.filter(
-      ({ name }) => renderlessComponents.includes(name) === false
+      ({ name }: { name: string }) => renderlessComponents.includes(name) === false
     )
   )(
     '$name should have the same `name` as suit class',
-    ({ name, installedName, suitClass }) => {
+    ({ name, installedName, suitClass }: { name: string; installedName: string; suitClass: string }) => {
       expect(installedName).toBe(name);
       if (name === 'AisInstantSearchSsr') {
         expect(suitClass).toBe(`ais-InstantSearch`);
@@ -117,9 +117,9 @@ describe('DOM component', () => {
 describe('installed widget', () => {
   test.each(
     components.filter(
-      ({ name }) => nonWidgetComponents.includes(name) === false
+      ({ name }: { name: string }) => nonWidgetComponents.includes(name) === false
     )
-  )('sets widgetType $name', ({ name, widget }) => {
+  )('sets widgetType $name', ({ name, widget }: { name: string; widget: any }) => {
     if (name === 'AisExperimentalConfigureRelatedItems') {
       expect(widget.$$widgetType).toBe('ais.configureRelatedItems');
     } else {
