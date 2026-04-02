@@ -125,7 +125,7 @@ function augmentInstantSearch(instantSearchOptions: Record<string, any>, cloneCo
 
   /**
    * make sure correct data is available in each widget's state.
-   * called in widget mixin with (this.widget, this)
+   * called in useWidget composable with (this.widget, this)
    *
    * @param {object} widget The widget instance
    * @param {object} parent The local parent index

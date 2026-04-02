@@ -5,11 +5,6 @@ import htmlSerializer from 'jest-serializer-html/createSerializer';
 
 import '@testing-library/jest-dom/extend-expect';
 import { warnCache } from '../../packages/react-instantsearch-core/src/lib/warn';
-import {
-  Vue2,
-  isVue2,
-  // @ts-ignore (vue is not typed)
-} from '../../packages/vue-instantsearch/src/util/vue-compat';
 
 import * as matchers from './matchers';
 
@@ -38,7 +33,3 @@ beforeEach(() => {
   // We reset the log's cache for our log assertions to be isolated in each test.
   warnCache.current = {};
 });
-
-if (isVue2) {
-  Vue2.config.productionTip = false;
-}
