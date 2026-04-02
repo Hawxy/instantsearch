@@ -10,6 +10,7 @@ import {
 } from 'algoliasearch-helper';
 import { h } from 'vue';
 import { createI18n } from 'vue-i18n';
+import { createRouter, createMemoryHistory } from 'vue-router';
 import { createStore } from 'vuex';
 
 import { mount, createSSRApp } from '../../../test/utils';
@@ -21,6 +22,7 @@ import { useWidget } from '../../composables/useWidget';
 import { createServerRootMixin } from '../createServerRootMixin';
 import { createFakeClient } from '../testutils/client';
 import { createSerializedState } from '../testutils/helper';
+
 
 jest.unmock('instantsearch.js/es');
 
@@ -351,9 +353,9 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
 
     it('forwards router', async () => {
       const searchClient = createFakeClient();
-      const Router4 = require('vue-router');
-      const router = Router4.createRouter({
-        history: Router4.createMemoryHistory(),
+
+      const router = createRouter({
+        history: createMemoryHistory(),
         routes: [{ path: '', component: {} }],
       });
 

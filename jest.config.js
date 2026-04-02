@@ -38,13 +38,13 @@ const config = {
     'jest-watch-typeahead/testname',
   ],
   transformIgnorePatterns: [
-    'node_modules/(?!(search-insights|algoliasearch|zod)/)',
+    'node_modules/(?!(search-insights|algoliasearch|zod|perfect-debounce|@vue/devtools-kit|@vue/devtools-shared|@vue/devtools-api|hookable|birpc)/)',
   ],
   transform: {
-    '^.+\\.(j|t)sx?$': 'babel-jest',
+    '^.+\\.m?[jt]sx?$': 'babel-jest',
     '^.+\\.vue$': '@vue/vue3-jest',
   },
-  moduleFileExtensions: ['tsx', 'ts', 'js', 'vue'],
+  moduleFileExtensions: ['tsx', 'ts', 'js', 'mjs', 'vue'],
   moduleNameMapper: {
     '^react-instantsearch$': '<rootDir>/packages/react-instantsearch/src/',
     '^react-instantsearch-core/dist/es(.*)$':
