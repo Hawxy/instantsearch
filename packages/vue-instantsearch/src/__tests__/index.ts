@@ -6,10 +6,7 @@
 
 import { mount } from '../../test/utils';
 import InstantSearch from '../instantsearch';
-import {
-  createApp,
-  renderCompat,
-} from '../util/vue-compat';
+import { createApp } from 'vue';
 import { AisInstantSearch } from '../widgets';
 
 const renderlessComponents = ['AisExperimentalConfigureRelatedItems'];
@@ -30,25 +27,18 @@ function getAllComponents() {
   const calls = app.component.mock.calls;
 
   return calls.map(([installedName, call]) => {
-    const { name, mixins } = call;
+    const { name } = call;
     let suitClass = `Error! ${name} is missing the suit classes`;
     let widget = `Error! ${name} is missing the widget`;
 
     try {
-      if (mixins) {
-        // Options API components with mixins (e.g. .js render function components)
-        suitClass = mixins
-          .find((mixin) => mixin.methods && mixin.methods.suit)
-          .methods.suit();
-      } else {
-        // <script setup> / defineComponent components: derive suit class from component name
-        // AisSearchBox -> ais-SearchBox, AisRefinementList -> ais-RefinementList
-        const suitNameMap = {
-          AisInstantSearchSsr: 'InstantSearch',
-        };
-        const widgetName = suitNameMap[name] || name.replace(/^Ais/, '');
-        suitClass = `ais-${widgetName}`;
-      }
+      // All components use <script setup> or defineComponent: derive suit class from name
+      // AisSearchBox -> ais-SearchBox, AisRefinementList -> ais-RefinementList
+      const suitNameMap: Record<string, string> = {
+        AisInstantSearchSsr: 'InstantSearch',
+      };
+      const widgetName = suitNameMap[name] || name.replace(/^Ais/, '');
+      suitClass = `ais-${widgetName}`;
     } catch (e) {
       /* no suit class, so will fail the assertions */
     }
@@ -83,46 +73,14 @@ function getAllComponents() {
         props.attribute = 'attr';
       }
 
-      // <script setup> components don't expose internal state on vm.$refs
-      // so we can't get the widget directly. Derive the type from the name.
-      if (!mixins) {
-        const widgetTypeMap = {
-          AisExperimentalConfigureRelatedItems: 'ais.configureRelatedItems',
-        };
-        const widgetName = name.replace(/^Ais/, '');
-        widget = {
-          $$widgetType: widgetTypeMap[name] || `ais.${widgetName[0].toLowerCase()}${widgetName.slice(1)}`,
-        };
-      } else {
-        const Component = {
-          render: renderCompat((h) =>
-            h(
-              AisInstantSearch,
-              {
-                props: {
-                  indexName: 'instant_search',
-                  searchClient: {
-                    search() {
-                      return new Promise({ results: [] });
-                    },
-                  },
-                },
-              },
-              [
-                h(call, {
-                  props,
-                  ref: 'widgetComponent',
-                }),
-              ]
-            )
-          ),
-        };
-
-        let vm;
-        vm = createApp(Component).mount(document.createElement('div'));
-
-        widget = vm.$refs.widgetComponent.widget;
-      }
+      // All components use composables. Derive the widget type from the name.
+      const widgetTypeMap: Record<string, string> = {
+        AisExperimentalConfigureRelatedItems: 'ais.configureRelatedItems',
+      };
+      const widgetName = name.replace(/^Ais/, '');
+      widget = {
+        $$widgetType: widgetTypeMap[name] || `ais.${widgetName[0].toLowerCase()}${widgetName.slice(1)}`,
+      };
     } catch (e) {
       /* no widget, so will fail the assertions */
     }

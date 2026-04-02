@@ -8,6 +8,7 @@ import {
   SearchParameters,
   SearchResults,
 } from 'algoliasearch-helper';
+import { h } from 'vue';
 import { createI18n } from 'vue-i18n';
 import { createStore } from 'vuex';
 
@@ -20,7 +21,6 @@ import { useWidget } from '../../composables/useWidget';
 import { createServerRootMixin } from '../createServerRootMixin';
 import { createFakeClient } from '../testutils/client';
 import { createSerializedState } from '../testutils/helper';
-import { renderCompat } from '../vue-compat';
 
 jest.unmock('instantsearch.js/es');
 
@@ -137,7 +137,7 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
               indexName: 'hello',
             }),
           ],
-          render: renderCompat((h) => h(InstantSearchSsr, {})),
+          render() { return h(InstantSearchSsr, {}); },
           created() {
             expect(typeof this.instantsearch.findResultsState).toBe('function');
             resolve();
@@ -159,16 +159,11 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
             indexName: 'hello',
           }),
         ],
-        render: renderCompat((h) =>
-          h(InstantSearchSsr, {}, [
-            h(Configure, {
-              attrs: {
-                hitsPerPage: 100,
-              },
-            }),
+        render() { return h(InstantSearchSsr, {}, [
+            h(Configure, { hitsPerPage: 100 }),
             h(SearchBox),
-          ])
-        ),
+          ]);
+        },
         serverPrefetch() {
           expect(() =>
             this.instantsearch.findResultsState({ component: this })
@@ -180,7 +175,7 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
 
       const wrapper = createSSRApp({
         mixins: [forceIsServerMixin],
-        render: renderCompat((h) => h(app)),
+        render() { return h(app); },
       });
 
       await renderToString(wrapper);
@@ -198,27 +193,11 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
             indexName: 'hello',
           }),
         ],
-        render: renderCompat((h) =>
-          /**
-           * This code triggers this warning in Vue 3:
-           * > Non-function value encountered for default slot. Prefer function slots for better performance.
-           *
-           * To fix it, replace the third argument
-           * > [h(...), h(...)]
-           * with
-           * > { default: () => [h(...), h(...)] }
-           *
-           * but it's not important (and not compatible in vue2), we're leaving it as-is.
-           */
-          h(InstantSearchSsr, {}, [
-            h(Configure, {
-              attrs: {
-                hitsPerPage: 100,
-              },
-            }),
+        render() { return h(InstantSearchSsr, {}, [
+            h(Configure, { hitsPerPage: 100 }),
             h(SearchBox),
-          ])
-        ),
+          ]);
+        },
         serverPrefetch() {
           return this.instantsearch.findResultsState({
             component: this,
@@ -232,7 +211,7 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
 
       const wrapper = createSSRApp({
         mixins: [forceIsServerMixin],
-        render: renderCompat((h) => h(app)),
+        render() { return h(app); },
       });
 
       await renderToString(wrapper);
@@ -273,26 +252,19 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
               indexName: 'hello',
             }),
           ],
-          render: renderCompat((h) =>
-            h(InstantSearchSsr, {}, [
-              h(Configure, {
-                attrs: {
-                  hitsPerPage: 100,
-                },
-              }),
+          render() { return h(InstantSearchSsr, {}, [
+              h(Configure, { hitsPerPage: 100 }),
               h(SearchBox),
               h(
                 Index,
                 {
-                  attrs: {
-                    indexName: 'hello',
-                    indexId: 'nestedIndex',
-                  },
+                  indexName: 'hello',
+                  indexId: 'nestedIndex',
                 },
                 []
               ),
-            ])
-          ),
+            ]);
+          },
           async serverPrefetch() {
             const state = await this.instantsearch.findResultsState({
               component: this,
@@ -370,7 +342,7 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
 
         const wrapper = createSSRApp({
           mixins: [forceIsServerMixin],
-          render: renderCompat((h) => h(app)),
+          render() { return h(app); },
         });
 
         renderToString(wrapper);
@@ -400,16 +372,11 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
           expect(this.$router).toBe(router);
           return {};
         },
-        render: renderCompat((h) =>
-          h(InstantSearchSsr, {}, [
-            h(Configure, {
-              attrs: {
-                hitsPerPage: 100,
-              },
-            }),
+        render() { return h(InstantSearchSsr, {}, [
+            h(Configure, { hitsPerPage: 100 }),
             h(SearchBox),
-          ])
-        ),
+          ]);
+        },
         serverPrefetch() {
           return this.instantsearch.findResultsState({
             component: this,
@@ -420,7 +387,7 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
 
       const wrapper = createSSRApp({
         mixins: [forceIsServerMixin],
-        render: renderCompat((h) => h(App)),
+        render() { return h(App); },
       });
       wrapper.use(router);
 
@@ -447,16 +414,11 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
           expect(this.$store).toBe(store);
           return {};
         },
-        render: renderCompat((h) =>
-          h(InstantSearchSsr, {}, [
-            h(Configure, {
-              attrs: {
-                hitsPerPage: 100,
-              },
-            }),
+        render() { return h(InstantSearchSsr, {}, [
+            h(Configure, { hitsPerPage: 100 }),
             h(SearchBox),
-          ])
-        ),
+          ]);
+        },
         serverPrefetch() {
           return this.instantsearch.findResultsState({
             component: this,
@@ -467,7 +429,7 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
 
       const wrapper = createSSRApp({
         mixins: [forceIsServerMixin],
-        render: renderCompat((h) => h(App)),
+        render() { return h(App); },
       });
 
       wrapper.use(store);
@@ -495,16 +457,11 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
           expect(this.$i18n).toBe(i18n.global);
           return {};
         },
-        render: renderCompat((h) =>
-          h(InstantSearchSsr, {}, [
-            h(Configure, {
-              attrs: {
-                hitsPerPage: 100,
-              },
-            }),
+        render() { return h(InstantSearchSsr, {}, [
+            h(Configure, { hitsPerPage: 100 }),
             h(SearchBox),
-          ])
-        ),
+          ]);
+        },
         serverPrefetch() {
           return this.instantsearch.findResultsState({
             component: this,
@@ -515,7 +472,7 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
 
       const wrapper = createSSRApp({
         mixins: [forceIsServerMixin],
-        render: renderCompat((h) => h(App)),
+        render() { return h(App); },
       });
 
       wrapper.use(i18n);
@@ -535,16 +492,11 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
             indexName: 'hello',
           }),
         ],
-        render: renderCompat((h) =>
-          h(InstantSearchSsr, {}, [
-            h(Configure, {
-              attrs: {
-                hitsPerPage: 100,
-              },
-            }),
+        render() { return h(InstantSearchSsr, {}, [
+            h(Configure, { hitsPerPage: 100 }),
             h(SearchBox),
-          ])
-        ),
+          ]);
+        },
         // in test, beforeCreated doesn't have $data yet, but IRL it does
         created() {
           this.instantsearch.hydrate({
@@ -581,16 +533,11 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
             indexName: 'hello',
           }),
         ],
-        render: renderCompat((h) =>
-          h(InstantSearchSsr, {}, [
-            h(Configure, {
-              attrs: {
-                hitsPerPage: 100,
-              },
-            }),
+        render() { return h(InstantSearchSsr, {}, [
+            h(Configure, { hitsPerPage: 100 }),
             h(SearchBox),
-          ])
-        ),
+          ]);
+        },
       };
 
       const {
@@ -619,16 +566,11 @@ See documentation: https://www.algolia.com/doc/api-reference/widgets/instantsear
             indexName: 'hello',
           }),
         ],
-        render: renderCompat((h) =>
-          h(InstantSearchSsr, {}, [
-            h(Configure, {
-              attrs: {
-                hitsPerPage: 100,
-              },
-            }),
+        render() { return h(InstantSearchSsr, {}, [
+            h(Configure, { hitsPerPage: 100 }),
             h(SearchBox),
-          ])
-        ),
+          ]);
+        },
       };
 
       const {

@@ -4,20 +4,21 @@
 import { runTestSuites } from '@instantsearch/tests/common';
 import * as testSuites from '@instantsearch/tests/shared-composition';
 
+import { h } from 'vue';
+
 import { nextTick, mountApp } from '../../test/utils';
 import { AisInstantSearch, AisRefinementList } from '../instantsearch';
-import { renderCompat } from '../util/vue-compat';
 jest.unmock('instantsearch.js/es');
 
 const testSetups = {
   async createSharedCompositionTests({ instantSearchOptions, widgetParams }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(AisRefinementList, { props: widgetParams.refinementList }),
-          ])
-        ),
+        render() {
+          return h(AisInstantSearch, instantSearchOptions, () => [
+            h(AisRefinementList, widgetParams.refinementList),
+          ]);
+        },
       },
       document.body.appendChild(document.createElement('div'))
     );

@@ -4,9 +4,10 @@
 
 import instantsearch from 'instantsearch.js/es';
 
+import { h } from 'vue';
+
 import { mount, nextTick } from '../../../test/utils';
 import { createFakeClient } from '../../util/testutils/client';
-import { renderCompat } from '../../util/vue-compat';
 import InstantSearchSsr from '../InstantSearchSsr';
 import SearchBox from '../SearchBox.vue';
 import '../../../test/utils/sortedHtmlSerializer';
@@ -64,7 +65,7 @@ it('does not start too many times', async () => {
   });
 
   const Wrapper = {
-    render: renderCompat((h) => h(InstantSearchSsr)),
+    render() { return h(InstantSearchSsr); },
   };
 
   mount(Wrapper, {

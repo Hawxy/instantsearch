@@ -4,7 +4,10 @@
 import { runTestSuites } from '@instantsearch/tests/common';
 import * as testSuites from '@instantsearch/tests/widgets';
 
+import { h, defineComponent } from 'vue';
+
 import { nextTick, mountApp } from '../../test/utils';
+import { useWidget } from '../composables/useWidget';
 import {
   AisInstantSearch,
   AisRefinementList,
@@ -14,7 +17,6 @@ import {
   AisPagination,
   AisInfiniteHits,
   AisSearchBox,
-  createWidgetMixin,
   AisHits,
   AisIndex,
   AisRangeInput,
@@ -30,7 +32,6 @@ import {
   AisMenuSelect,
   AisDynamicWidgets,
 } from '../instantsearch';
-import { renderCompat } from '../util/vue-compat';
 
 jest.unmock('instantsearch.js/es');
 
@@ -38,15 +39,18 @@ jest.unmock('instantsearch.js/es');
  * prevent rethrowing InstantSearch errors, so tests can be asserted.
  * IRL this isn't needed, as the error doesn't stop execution.
  */
-const GlobalErrorSwallower = {
-  mixins: [createWidgetMixin({ connector: true })],
+const GlobalErrorSwallower = defineComponent({
+  setup() {
+    const { instantSearchInstance } = useWidget({ connector: true });
+    return { instantSearchInstance };
+  },
   mounted() {
-    this.instantSearchInstance.on('error', () => {});
+    (this as any).instantSearchInstance.on('error', () => {});
   },
   render() {
     return null;
   },
-};
+});
 
 const testSetups = {
   async createRefinementListWidgetTests({
@@ -55,12 +59,10 @@ const testSetups = {
   }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(AisRefinementList, { props: widgetParams }),
+        render() { return h(AisInstantSearch, instantSearchOptions, [
+            h(AisRefinementList, widgetParams),
             h(GlobalErrorSwallower),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -73,12 +75,10 @@ const testSetups = {
   }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(AisHierarchicalMenu, { props: widgetParams }),
+        render() { return h(AisInstantSearch, instantSearchOptions, [
+            h(AisHierarchicalMenu, widgetParams),
             h(GlobalErrorSwallower),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -93,13 +93,11 @@ const testSetups = {
 
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(AisBreadcrumb, { props: widgetParams }),
-            h(AisHierarchicalMenu, { props: hierarchicalWidgetParams }),
+        render() { return h(AisInstantSearch, instantSearchOptions, [
+            h(AisBreadcrumb, widgetParams),
+            h(AisHierarchicalMenu, hierarchicalWidgetParams),
             h(GlobalErrorSwallower),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -109,12 +107,10 @@ const testSetups = {
   async createMenuWidgetTests({ instantSearchOptions, widgetParams }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(AisMenu, { props: widgetParams }),
+        render() { return h(AisInstantSearch, instantSearchOptions, [
+            h(AisMenu, widgetParams),
             h(GlobalErrorSwallower),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -124,12 +120,10 @@ const testSetups = {
   async createPaginationWidgetTests({ instantSearchOptions, widgetParams }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(AisPagination, { props: widgetParams }),
+        render() { return h(AisInstantSearch, instantSearchOptions, [
+            h(AisPagination, widgetParams),
             h(GlobalErrorSwallower),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -139,78 +133,47 @@ const testSetups = {
   async createInfiniteHitsWidgetTests({ instantSearchOptions, widgetParams }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
+        render() { return h(AisInstantSearch, instantSearchOptions, [
             h(AisSearchBox),
-            h(AisInfiniteHits, {
-              attrs: { id: 'main-hits' },
-              props: widgetParams,
-              scopedSlots: {
+            h(AisInfiniteHits, { id: 'main-hits', ...widgetParams }, {
+              item: ({ item: hit, sendEvent }) =>
+                h(
+                  'div',
+                  { 'data-testid': `main-hits-top-level-${hit.__position}` },
+                  [
+                    hit.objectID,
+                    h('button', {
+                      'data-testid': `main-hits-convert-${hit.__position}`,
+                      onClick: () => sendEvent('conversion', hit, 'Converted'),
+                    }),
+                    h('button', {
+                      'data-testid': `main-hits-click-${hit.__position}`,
+                      onClick: () => sendEvent('click', hit, 'Clicked'),
+                    }),
+                  ]
+                ),
+            }),
+            h('div', { id: 'hits-with-defaults' }, [
+              h(AisInfiniteHits, widgetParams),
+            ]),
+            h(AisIndex, { indexName: 'nested' }, () => [
+              h(AisInfiniteHits, { id: 'nested-hits' }, {
                 item: ({ item: hit, sendEvent }) =>
                   h(
                     'div',
-                    {
-                      attrs: {
-                        'data-testid': `main-hits-top-level-${hit.__position}`,
-                      },
-                    },
+                    { 'data-testid': `nested-hits-top-level-${hit.__position}` },
                     [
                       hit.objectID,
                       h('button', {
-                        attrs: {
-                          'data-testid': `main-hits-convert-${hit.__position}`,
-                        },
-                        on: {
-                          click: () =>
-                            sendEvent('conversion', hit, 'Converted'),
-                        },
-                      }),
-                      h('button', {
-                        attrs: {
-                          'data-testid': `main-hits-click-${hit.__position}`,
-                        },
-                        on: {
-                          click: () => sendEvent('click', hit, 'Clicked'),
-                        },
+                        'data-testid': `nested-hits-click-${hit.__position}`,
+                        onClick: () => sendEvent('click', hit, 'Clicked nested'),
                       }),
                     ]
                   ),
-              },
-            }),
-            h('div', { attrs: { id: 'hits-with-defaults' } }, [
-              h(AisInfiniteHits, { props: widgetParams }),
-            ]),
-            h(AisIndex, { props: { indexName: 'nested' } }, [
-              h(AisInfiniteHits, {
-                attrs: { id: 'nested-hits' },
-                scopedSlots: {
-                  item: ({ item: hit, sendEvent }) =>
-                    h(
-                      'div',
-                      {
-                        attrs: {
-                          'data-testid': `nested-hits-top-level-${hit.__position}`,
-                        },
-                      },
-                      [
-                        hit.objectID,
-                        h('button', {
-                          attrs: {
-                            'data-testid': `nested-hits-click-${hit.__position}`,
-                          },
-                          on: {
-                            click: () =>
-                              sendEvent('click', hit, 'Clicked nested'),
-                          },
-                        }),
-                      ]
-                    ),
-                },
               }),
             ]),
             h(GlobalErrorSwallower),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -220,78 +183,47 @@ const testSetups = {
   async createHitsWidgetTests({ instantSearchOptions, widgetParams }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
+        render() { return h(AisInstantSearch, instantSearchOptions, [
             h(AisSearchBox),
-            h(AisHits, {
-              attrs: { id: 'main-hits' },
-              props: widgetParams,
-              scopedSlots: {
+            h(AisHits, { id: 'main-hits', ...widgetParams }, {
+              item: ({ item: hit, sendEvent }) =>
+                h(
+                  'div',
+                  { 'data-testid': `main-hits-top-level-${hit.__position}` },
+                  [
+                    hit.objectID,
+                    h('button', {
+                      'data-testid': `main-hits-convert-${hit.__position}`,
+                      onClick: () => sendEvent('conversion', hit, 'Converted'),
+                    }),
+                    h('button', {
+                      'data-testid': `main-hits-click-${hit.__position}`,
+                      onClick: () => sendEvent('click', hit, 'Clicked'),
+                    }),
+                  ]
+                ),
+            }),
+            h('div', { id: 'hits-with-defaults' }, [
+              h(AisHits, widgetParams),
+            ]),
+            h(AisIndex, { indexName: 'nested' }, () => [
+              h(AisHits, { id: 'nested-hits' }, {
                 item: ({ item: hit, sendEvent }) =>
                   h(
                     'div',
-                    {
-                      attrs: {
-                        'data-testid': `main-hits-top-level-${hit.__position}`,
-                      },
-                    },
+                    { 'data-testid': `nested-hits-top-level-${hit.__position}` },
                     [
                       hit.objectID,
                       h('button', {
-                        attrs: {
-                          'data-testid': `main-hits-convert-${hit.__position}`,
-                        },
-                        on: {
-                          click: () =>
-                            sendEvent('conversion', hit, 'Converted'),
-                        },
-                      }),
-                      h('button', {
-                        attrs: {
-                          'data-testid': `main-hits-click-${hit.__position}`,
-                        },
-                        on: {
-                          click: () => sendEvent('click', hit, 'Clicked'),
-                        },
+                        'data-testid': `nested-hits-click-${hit.__position}`,
+                        onClick: () => sendEvent('click', hit, 'Clicked nested'),
                       }),
                     ]
                   ),
-              },
-            }),
-            h('div', { attrs: { id: 'hits-with-defaults' } }, [
-              h(AisHits, { props: widgetParams }),
-            ]),
-            h(AisIndex, { props: { indexName: 'nested' } }, [
-              h(AisHits, {
-                attrs: { id: 'nested-hits' },
-                scopedSlots: {
-                  item: ({ item: hit, sendEvent }) =>
-                    h(
-                      'div',
-                      {
-                        attrs: {
-                          'data-testid': `nested-hits-top-level-${hit.__position}`,
-                        },
-                      },
-                      [
-                        hit.objectID,
-                        h('button', {
-                          attrs: {
-                            'data-testid': `nested-hits-click-${hit.__position}`,
-                          },
-                          on: {
-                            click: () =>
-                              sendEvent('click', hit, 'Clicked nested'),
-                          },
-                        }),
-                      ]
-                    ),
-                },
               }),
             ]),
             h(GlobalErrorSwallower),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -301,12 +233,10 @@ const testSetups = {
   async createRangeInputWidgetTests({ instantSearchOptions, widgetParams }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(AisRangeInput, { props: widgetParams }),
+        render() { return h(AisInstantSearch, instantSearchOptions, [
+            h(AisRangeInput, widgetParams),
             h(GlobalErrorSwallower),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -316,11 +246,9 @@ const testSetups = {
   createInstantSearchWidgetTests({ instantSearchOptions }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
+        render() { return h(AisInstantSearch, instantSearchOptions, [
             h(GlobalErrorSwallower),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -333,19 +261,17 @@ const testSetups = {
         `Vue InstantSearch (${
           require('../../../vue-instantsearch/package.json').version
         })`,
-        `Vue (${require('../util/vue-compat').version})`,
+        `Vue (${require('vue').version})`,
       ],
     };
   },
   async createHitsPerPageWidgetTests({ instantSearchOptions, widgetParams }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(AisHitsPerPage, { props: widgetParams }),
+        render() { return h(AisInstantSearch, instantSearchOptions, [
+            h(AisHitsPerPage, widgetParams),
             h(GlobalErrorSwallower),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -362,16 +288,14 @@ const testSetups = {
 
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
+        render() { return h(AisInstantSearch, instantSearchOptions, [
             ...refinementListAttributes.map((attribute) =>
-              h(AisRefinementList, { props: { attribute } })
+              h(AisRefinementList, { attribute })
             ),
             h(AisCurrentRefinements),
-            h(AisClearRefinements, { props: widgetParams }),
+            h(AisClearRefinements, widgetParams),
             h(GlobalErrorSwallower),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -384,29 +308,23 @@ const testSetups = {
   }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h('form', {}, [
-            h(AisInstantSearch, { props: instantSearchOptions }, [
+        render() { return h('form', {}, [
+            h(AisInstantSearch, instantSearchOptions, [
               h(AisSearchBox),
-              h(AisRefinementList, { props: { attribute: 'brand' } }),
-              h(AisRefinementList, {
-                props: { operator: 'and', attribute: 'feature' },
-              }),
+              h(AisRefinementList, { attribute: 'brand' }),
+              h(AisRefinementList, { operator: 'and', attribute: 'feature' }),
               h(AisHierarchicalMenu, {
-                props: {
-                  attributes: [
-                    'hierarchicalCategories.lvl0',
-                    'hierarchicalCategories.lvl1',
-                    'hierarchicalCategories.lvl2',
-                  ],
-                },
+                attributes: [
+                  'hierarchicalCategories.lvl0',
+                  'hierarchicalCategories.lvl1',
+                  'hierarchicalCategories.lvl2',
+                ],
               }),
-              h(AisRangeInput, { props: { attribute: 'price' } }),
-              h(AisCurrentRefinements, { props: widgetParams }),
+              h(AisRangeInput, { attribute: 'price' }),
+              h(AisCurrentRefinements, widgetParams),
               h(GlobalErrorSwallower),
             ]),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -416,12 +334,10 @@ const testSetups = {
   async createRatingMenuWidgetTests({ instantSearchOptions, widgetParams }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(AisRatingMenu, { props: widgetParams }),
+        render() { return h(AisInstantSearch, instantSearchOptions, [
+            h(AisRatingMenu, widgetParams),
             h(GlobalErrorSwallower),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -431,12 +347,10 @@ const testSetups = {
   async createNumericMenuWidgetTests({ instantSearchOptions, widgetParams }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(AisNumericMenu, { props: widgetParams }),
+        render() { return h(AisInstantSearch, instantSearchOptions, [
+            h(AisNumericMenu, widgetParams),
             h(GlobalErrorSwallower),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -449,12 +363,10 @@ const testSetups = {
   }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(AisToggleRefinement, { props: widgetParams }),
+        render() { return h(AisInstantSearch, instantSearchOptions, [
+            h(AisToggleRefinement, widgetParams),
             h(GlobalErrorSwallower),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -464,12 +376,10 @@ const testSetups = {
   async createSearchBoxWidgetTests({ instantSearchOptions, widgetParams }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(AisSearchBox, { props: widgetParams }),
+        render() { return h(AisInstantSearch, instantSearchOptions, [
+            h(AisSearchBox, widgetParams),
             h(GlobalErrorSwallower),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -479,12 +389,10 @@ const testSetups = {
   async createSortByWidgetTests({ instantSearchOptions, widgetParams }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(AisSortBy, { props: widgetParams }),
+        render() { return h(AisInstantSearch, instantSearchOptions, [
+            h(AisSortBy, widgetParams),
             h(GlobalErrorSwallower),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -494,15 +402,13 @@ const testSetups = {
   async createStatsWidgetTests({ instantSearchOptions, widgetParams }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h('div', {}, [
-            h(AisInstantSearch, { props: instantSearchOptions }, [
+        render() { return h('div', {}, [
+            h(AisInstantSearch, instantSearchOptions, [
               h(AisSearchBox),
-              h(AisStats, { props: widgetParams }),
+              h(AisStats, widgetParams),
               h(GlobalErrorSwallower),
             ]),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -526,12 +432,10 @@ const testSetups = {
   createPoweredByWidgetTests({ instantSearchOptions, widgetParams }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(AisPoweredBy, { props: widgetParams }),
+        render() { return h(AisInstantSearch, instantSearchOptions, [
+            h(AisPoweredBy, widgetParams),
             h(GlobalErrorSwallower),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -543,12 +447,10 @@ const testSetups = {
   async createMenuSelectWidgetTests({ instantSearchOptions, widgetParams }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
-            h(AisMenuSelect, { props: widgetParams }),
+        render() { return h(AisInstantSearch, instantSearchOptions, [
+            h(AisMenuSelect, widgetParams),
             h(GlobalErrorSwallower),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
@@ -558,13 +460,12 @@ const testSetups = {
   createDynamicWidgetsWidgetTests({ instantSearchOptions, widgetParams }) {
     mountApp(
       {
-        render: renderCompat((h) =>
-          h(AisInstantSearch, { props: instantSearchOptions }, [
+        render() { return h(AisInstantSearch, instantSearchOptions, [
             h(
               AisDynamicWidgets,
-              { props: widgetParams },
-              h(AisRefinementList, { props: { attribute: 'brand' } }),
-              h(AisMenu, { props: { attribute: 'category' } }),
+              widgetParams,
+              h(AisRefinementList, { attribute: 'brand' }),
+              h(AisMenu, { attribute: 'category' }),
               h(AisHierarchicalMenu, {
                 props: {
                   attributes: [
@@ -575,8 +476,7 @@ const testSetups = {
               })
             ),
             h(GlobalErrorSwallower),
-          ])
-        ),
+          ]); },
       },
       document.body.appendChild(document.createElement('div'))
     );
